@@ -20,7 +20,7 @@ public class CloseGameRestInvoker {
 		return restTemplate.exchange(
 				URL,
 				HttpMethod.DELETE,
-				new HttpEntity<>(null), // todo: ?
+				new HttpEntity<>(null),
 				Void.class,
 				gameId
 		);
