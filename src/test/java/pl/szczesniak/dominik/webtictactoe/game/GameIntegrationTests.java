@@ -6,12 +6,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.CheckGameIsReadyForPlayersRestInvoker;
-import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.CheckGameIsReadyForPlayersRestInvoker.GameInfoDto;
-import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.CheckGameIsReadyForPlayersRestInvoker.PlayersForTheGameDto;
+import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.CheckGameIsReadyForPlayersRestInvoker.TicTacToeGameDto;
 import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.CloseGameRestInvoker;
 import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.GetBoardViewRestInvoker;
+import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.GetWhichPlayerToMoveRestInvoker;
 import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.MakeMoveRestInvoker;
 import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.MakeMoveRestInvoker.GameResultDto;
+import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.MakeMoveRestInvoker.MakeMoveDto;
 import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.QueueForGameRestInvoker;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,7 +26,7 @@ public class GameIntegrationTests {
 	private QueueForGameRestInvoker queueForGameRest;
 
 	@Autowired
-	private CheckGameIsReadyForPlayersRestInvoker checkGameIsReadyForPlayersRest;
+	private CheckGameIsReadyForPlayersRestInvoker prepareGameForPlayers;
 
 	@Autowired
 	private MakeMoveRestInvoker makeMoveRest;
@@ -35,6 +36,9 @@ public class GameIntegrationTests {
 
 	@Autowired
 	private GetBoardViewRestInvoker getBoardViewRest;
+
+	@Autowired
+	private GetWhichPlayerToMoveRestInvoker getWhichPlayerToMoveRest;
 
 	@Test
 	void users_should_queue_for_game_and_get_paired() {
@@ -51,30 +55,30 @@ public class GameIntegrationTests {
 		assertThat(queueForGamePlayerTwoResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
 		// when
-		final ResponseEntity<GameInfoDto> checkGameIsReadyResponse = checkGameIsReadyForPlayersRest.checkGameIsReady(
-				PlayersForTheGameDto.builder().playerOne(playerOne).playerTwo(playerTwo).build());
+		final ResponseEntity<TicTacToeGameDto> prepareGameResponse = prepareGameForPlayers.prepareGame();
 
 		// then
-		assertThat(checkGameIsReadyResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-		assertThat(checkGameIsReadyResponse.getBody().getGameIsReady()).isTrue();
+		assertThat(prepareGameResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+		assertThat(prepareGameResponse.getBody().getGameIsReady()).isTrue();
+		assertThat(prepareGameResponse.getBody().getPlayerOne()).isEqualTo(playerOne);
+		assertThat(prepareGameResponse.getBody().getPlayerTwo()).isEqualTo(playerTwo);
 	}
 
 	@Test
-	void game_should_finish() {
+	void game_should_finish_once_player_has_won() {
 		// given
 		final String playerOne = createAnyPlayerName().getValue();
 		final String playerTwo = createAnyPlayerName().getValue();
 		queueForGameRest.queueForGame(playerOne);
 		queueForGameRest.queueForGame(playerTwo);
 
-		final ResponseEntity<GameInfoDto> checkGameIsReadyResponse = checkGameIsReadyForPlayersRest.checkGameIsReady(
-				PlayersForTheGameDto.builder().playerOne(playerOne).playerTwo(playerTwo).build());
+		final ResponseEntity<TicTacToeGameDto> checkGameIsReadyResponse = prepareGameForPlayers.prepareGame();
 		final Long gameId = checkGameIsReadyResponse.getBody().getGameId();
 
 		// when
 		final ResponseEntity<GameResultDto> makeMoveResult_1 = makeMoveRest.makeMove(
 				gameId,
-				MakeMoveRestInvoker.MakeMoveDto.builder().playerName(playerOne).columnIndex(0).rowIndex(0).build()
+				MakeMoveDto.builder().playerName(playerOne).columnIndex(0).rowIndex(0).build()
 		);
 
 		// then
@@ -84,7 +88,7 @@ public class GameIntegrationTests {
 		// when
 		final ResponseEntity<GameResultDto> makeMoveResult_2 = makeMoveRest.makeMove(
 				gameId,
-				MakeMoveRestInvoker.MakeMoveDto.builder().playerName(playerTwo).columnIndex(0).rowIndex(1).build()
+				MakeMoveDto.builder().playerName(playerTwo).columnIndex(0).rowIndex(1).build()
 		);
 
 		// then
@@ -94,7 +98,7 @@ public class GameIntegrationTests {
 		// when
 		final ResponseEntity<GameResultDto> makeMoveResult_3 = makeMoveRest.makeMove(
 				gameId,
-				MakeMoveRestInvoker.MakeMoveDto.builder().playerName(playerOne).columnIndex(1).rowIndex(0).build()
+				MakeMoveDto.builder().playerName(playerOne).columnIndex(1).rowIndex(0).build()
 		);
 
 		// then
@@ -104,7 +108,7 @@ public class GameIntegrationTests {
 		// when
 		final ResponseEntity<GameResultDto> makeMoveResult_4 = makeMoveRest.makeMove(
 				gameId,
-				MakeMoveRestInvoker.MakeMoveDto.builder().playerName(playerTwo).columnIndex(2).rowIndex(2).build()
+				MakeMoveDto.builder().playerName(playerTwo).columnIndex(2).rowIndex(2).build()
 		);
 
 		// then
@@ -114,12 +118,14 @@ public class GameIntegrationTests {
 		// when
 		final ResponseEntity<GameResultDto> makeMoveResult_5 = makeMoveRest.makeMove(
 				gameId,
-				MakeMoveRestInvoker.MakeMoveDto.builder().playerName(playerOne).columnIndex(2).rowIndex(0).build()
+				MakeMoveDto.builder().playerName(playerOne).columnIndex(2).rowIndex(0).build()
 		);
 
 		// then
 		assertThat(makeMoveResult_5.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 		assertThat(makeMoveResult_5.getBody().getGameStatus()).isEqualToIgnoringCase("win");
+		assertThat(makeMoveResult_5.getBody().getPlayerThatWon()).isEqualTo(playerOne);
+		assertThat(makeMoveResult_5.getBody().getPlayerThatWon()).isNotEqualTo(playerTwo);
 
 		// when
 		final ResponseEntity<Character[][]> getBoardViewResponse = getBoardViewRest.getBoardView(gameId);
@@ -136,15 +142,59 @@ public class GameIntegrationTests {
 
 		// then
 		assertThat(closeGameResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-
-		// when
-		final ResponseEntity<GameInfoDto> checkGameIsReadyResponseAfterClosing = checkGameIsReadyForPlayersRest.checkGameIsReady(
-				PlayersForTheGameDto.builder().playerOne(playerOne).playerTwo(playerTwo).build());
-
-		// then
-		assertThat(checkGameIsReadyResponseAfterClosing.getBody().getGameIsReady()).isFalse();
-
 	}
 
+	@Test
+	void should_get_which_player_to_move_before_the_player_moves() {
+		// given
+		final String playerOne = createAnyPlayerName().getValue();
+		final String playerTwo = createAnyPlayerName().getValue();
+		queueForGameRest.queueForGame(playerOne);
+		queueForGameRest.queueForGame(playerTwo);
+
+		final ResponseEntity<TicTacToeGameDto> checkGameIsReadyResponse = prepareGameForPlayers.prepareGame();
+		final Long gameId = checkGameIsReadyResponse.getBody().getGameId();
+
+		// when
+		final ResponseEntity<String> playerToMoveResponse_1 = getWhichPlayerToMoveRest.getWhichPlayerToMove(gameId);
+
+		// then
+		assertThat(playerToMoveResponse_1.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(playerToMoveResponse_1.getBody()).isEqualTo(playerOne);
+
+		// when
+		makeMoveRest.makeMove(gameId, MakeMoveDto.builder().playerName(playerOne).rowIndex(1).columnIndex(1).build());
+
+		// then
+		final ResponseEntity<String> playerToMoveResponse_2 = getWhichPlayerToMoveRest.getWhichPlayerToMove(gameId);
+		assertThat(playerToMoveResponse_2.getBody()).isEqualTo(playerTwo);
+
+		// when
+		makeMoveRest.makeMove(gameId, MakeMoveDto.builder().playerName(playerTwo).rowIndex(2).columnIndex(2).build());
+
+		// then
+		final ResponseEntity<String> playerToMoveResponse_3 = getWhichPlayerToMoveRest.getWhichPlayerToMove(gameId);
+		assertThat(playerToMoveResponse_3.getBody()).isEqualTo(playerOne);
+
+		// when
+		makeMoveRest.makeMove(gameId, MakeMoveDto.builder().playerName(playerOne).rowIndex(0).columnIndex(0).build());
+
+		// then
+		final ResponseEntity<String> playerToMoveResponse_4 = getWhichPlayerToMoveRest.getWhichPlayerToMove(gameId);
+		assertThat(playerToMoveResponse_4.getBody()).isEqualTo(playerTwo);
+	}
+
+	@Test
+	void should_not_create_game_when_not_enough_players_in_queue() {
+		// given
+		final String playerOne = createAnyPlayerName().getValue();
+		queueForGameRest.queueForGame(playerOne);
+
+		// when
+		final ResponseEntity<TicTacToeGameDto> prepareGameResponseEntity = prepareGameForPlayers.prepareGame();
+
+		// then
+		assertThat(prepareGameResponseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+	}
 
 }

@@ -2,7 +2,6 @@ package pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -16,10 +15,11 @@ public class QueueForGameRestInvoker {
 	public final TestRestTemplate restTemplate;
 
 	public ResponseEntity<Void> queueForGame(final String username) {
+		final String urlWithParam = URL + "?username=" + username;
 		return restTemplate.exchange(
-				URL,
+				urlWithParam,
 				HttpMethod.POST,
-				new HttpEntity<>(username),
+				null,
 				Void.class
 		);
 	}
