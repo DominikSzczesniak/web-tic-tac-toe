@@ -5,8 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.CheckGameIsReadyForPlayersRestInvoker;
-import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.CheckGameIsReadyForPlayersRestInvoker.TicTacToeGameDto;
+import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.GetGameForPlayer;
+import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.PrepareGameControllerRestInvoker;
+import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.PrepareGameControllerRestInvoker.TicTacToeGameDto;
 import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.CloseGameRestInvoker;
 import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.GetBoardViewRestInvoker;
 import pl.szczesniak.dominik.webtictactoe.game.infrastructure.adapters.incoming.rest.GetWhichPlayerToMoveRestInvoker;
@@ -26,7 +27,10 @@ public class GameIntegrationTests {
 	private QueueForGameRestInvoker queueForGameRest;
 
 	@Autowired
-	private CheckGameIsReadyForPlayersRestInvoker prepareGameForPlayers;
+	private GetGameForPlayer getGameForPlayer;
+
+	@Autowired
+	private PrepareGameControllerRestInvoker prepareGameForPlayers;
 
 	@Autowired
 	private MakeMoveRestInvoker makeMoveRest;
@@ -59,9 +63,29 @@ public class GameIntegrationTests {
 
 		// then
 		assertThat(prepareGameResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-		assertThat(prepareGameResponse.getBody().getGameIsReady()).isTrue();
 		assertThat(prepareGameResponse.getBody().getPlayerOne()).isEqualTo(playerOne);
 		assertThat(prepareGameResponse.getBody().getPlayerTwo()).isEqualTo(playerTwo);
+	}
+
+	@Test
+	void game_should_be_ready_for_players() {
+		// given
+		final String playerOne = createAnyPlayerName().getValue();
+		final String playerTwo = createAnyPlayerName().getValue();
+		queueForGameRest.queueForGame(playerOne);
+		queueForGameRest.queueForGame(playerTwo);
+
+		final ResponseEntity<TicTacToeGameDto> prepareGameResponseEntity = prepareGameForPlayers.prepareGame();
+
+		// when
+		final ResponseEntity<Long> isGameReadyForPlayerOneResponse = getGameForPlayer.getGameForPlayer(playerOne);
+		final ResponseEntity<Long> isGameReadyForPlayerTwoResponse = getGameForPlayer.getGameForPlayer(playerTwo);
+
+		// then
+		assertThat(isGameReadyForPlayerOneResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(isGameReadyForPlayerTwoResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(isGameReadyForPlayerOneResponse.getBody()).isEqualTo(prepareGameResponseEntity.getBody().getGameId());
+		assertThat(isGameReadyForPlayerOneResponse.getBody()).isEqualTo(isGameReadyForPlayerTwoResponse.getBody());
 	}
 
 	@Test
@@ -182,19 +206,6 @@ public class GameIntegrationTests {
 		// then
 		final ResponseEntity<String> playerToMoveResponse_4 = getWhichPlayerToMoveRest.getWhichPlayerToMove(gameId);
 		assertThat(playerToMoveResponse_4.getBody()).isEqualTo(playerTwo);
-	}
-
-	@Test
-	void should_not_create_game_when_not_enough_players_in_queue() {
-		// given
-		final String playerOne = createAnyPlayerName().getValue();
-		queueForGameRest.queueForGame(playerOne);
-
-		// when
-		final ResponseEntity<TicTacToeGameDto> prepareGameResponseEntity = prepareGameForPlayers.prepareGame();
-
-		// then
-		assertThat(prepareGameResponseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}
 
 }

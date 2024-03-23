@@ -2,7 +2,6 @@ package pl.szczesniak.dominik.webtictactoe.game.infrastructure.incoming.rest;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,7 +9,6 @@ import pl.szczesniak.dominik.webtictactoe.game.domain.TicTacToeGameService;
 
 @RequiredArgsConstructor
 @RestController
-@CrossOrigin(origins = "http://localhost:63342")
 public class GetBoardViewController {
 
 	private final TicTacToeGameService ticTacToeGameService;

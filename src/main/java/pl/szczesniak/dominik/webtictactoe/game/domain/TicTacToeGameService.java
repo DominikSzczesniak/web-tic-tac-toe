@@ -14,6 +14,7 @@ import pl.szczesniak.dominik.webtictactoe.game.domain.model.exceptions.NotEnough
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -28,9 +29,7 @@ public class TicTacToeGameService {
 	private final AtomicLong id = new AtomicLong(1);
 
 	public void queueToPlay(final PlayerName playerName) {
-		System.out.println("ququed");
 		playersInQueue.add(playerName);
-		playersInQueue.forEach(username -> System.out.println(username.getValue()));
 	}
 
 	public TicTacToeGame prepareGame() {
@@ -61,6 +60,7 @@ public class TicTacToeGameService {
 				new Player(new Symbol('X'), playersInQueue.get(1)),
 				new TicTacToeGameId(id.getAndIncrement())
 		);
+		ticTacToeGame.setNextPlayerToMove();
 		ticTacToeGames.put(ticTacToeGame.getGameId(), ticTacToeGame);
 		return ticTacToeGame;
 	}
@@ -74,15 +74,17 @@ public class TicTacToeGameService {
 		final SingleGame singleGame = getSingleGame(command.getGameId());
 		final TicTacToeGame ticTacToeGame = getTicTacToeGame(command.getGameId());
 
-		final GameResult gameResult = resolvePlayerMove(command.getPlayerMove(), singleGame, ticTacToeGame);
+		final GameResult gameResult = resolvePlayerMove(command.getPlayerName(), command.getPlayerMove(), singleGame, ticTacToeGame);
 
 		singleGamesInProgress.put(command.getGameId().getValue(), singleGame);
 		ticTacToeGames.put(command.getGameId(), ticTacToeGame);
 		return gameResult;
 	}
 
-	private static GameResult resolvePlayerMove(final PlayerMove playerMove, final SingleGame singleGame, final TicTacToeGame ticTacToeGame) {
-		final GameResult gameResult = singleGame.makeMove(ticTacToeGame.getNextPlayerToMove(), playerMove);
+	private static GameResult resolvePlayerMove(final PlayerName playerName, final PlayerMove playerMove,
+												final SingleGame singleGame, final TicTacToeGame ticTacToeGame) {
+		final Player player = ticTacToeGame.getPlayerByName(playerName);
+		final GameResult gameResult = singleGame.makeMove(player, playerMove);
 		ticTacToeGame.setNextPlayerToMove();
 		return gameResult;
 	}
@@ -114,6 +116,15 @@ public class TicTacToeGameService {
 	private TicTacToeGame getTicTacToeGame(final TicTacToeGameId gameId) {
 		return ofNullable(ticTacToeGames.get(gameId)).orElseThrow(
 				() -> new GameDoesNotExistException("Game with gameId=" + gameId.toString() + " does not exist"));
+	}
+
+	public TicTacToeGameId getGameForPlayer(final PlayerName playerName) {
+		final Optional<TicTacToeGame> game = ticTacToeGames.values().stream()
+				.filter(ticTacToeGame ->
+						ticTacToeGame.getPlayerOne().getName().equals(playerName)
+						|| ticTacToeGame.getPlayerTwo().getName().equals(playerName))
+				.findFirst();
+		return game.orElseThrow(() -> new GameDoesNotExistException("Game for player=" + playerName.getValue() + " does not exist")).getGameId();
 	}
 
 }

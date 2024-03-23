@@ -14,7 +14,6 @@ import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.PlayerName;
 import pl.szczesniak.dominik.webtictactoe.game.domain.TicTacToeGameService;
 import pl.szczesniak.dominik.webtictactoe.game.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.game.domain.model.commands.MakeMove;
-import pl.szczesniak.dominik.webtictactoe.game.domain.model.exceptions.GameDoesNotExistException;
 
 @RequiredArgsConstructor
 @RestController
@@ -24,17 +23,13 @@ public class MakeMoveController {
 
 	@PostMapping("/api/games/{gameId}/move")
 	public ResponseEntity<?> makeMove(@PathVariable final Long gameId, @RequestBody final MakeMoveDto makeMoveDto) {
-		try {
-			final GameResult gameResult = ticTacToeGameService.makeMove(new MakeMove(
-					new TicTacToeGameId(gameId),
-					new PlayerName(makeMoveDto.getPlayerName()),
-					new PlayerMove(makeMoveDto.getRowIndex(), makeMoveDto.getColumnIndex()))
-			);
-			final GameResultDto gameResultDto = toDto(gameResult);
-			return ResponseEntity.status(201).body(gameResultDto);
-		} catch (GameDoesNotExistException e) {
-			return ResponseEntity.status(404).body(e.toString());
-		}
+		final GameResult gameResult = ticTacToeGameService.makeMove(new MakeMove(
+				new TicTacToeGameId(gameId),
+				new PlayerName(makeMoveDto.getPlayerName()),
+				new PlayerMove(makeMoveDto.getRowIndex(), makeMoveDto.getColumnIndex()))
+		);
+		final GameResultDto gameResultDto = toDto(gameResult);
+		return ResponseEntity.status(201).body(gameResultDto);
 	}
 
 	private static GameResultDto toDto(final GameResult gameResult) {

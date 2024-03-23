@@ -3,6 +3,7 @@ package pl.szczesniak.dominik.webtictactoe.game.domain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.PlayerName;
+import pl.szczesniak.dominik.webtictactoe.game.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.game.domain.model.commands.MakeMoveSample;
 import pl.szczesniak.dominik.webtictactoe.game.domain.model.exceptions.GameDoesNotExistException;
 import pl.szczesniak.dominik.webtictactoe.game.domain.model.exceptions.NotEnoughPlayersException;
@@ -141,6 +142,26 @@ class TicTacToeGameServiceTest {
 
 		// then
 		assertThat(tut.getPlayerToMove(ticTacToeGame.getGameId())).isEqualTo(playerTwo);
+	}
+
+	@Test
+	void game_should_be_ready_for_players() {
+		// given
+		final PlayerName playerOne = createAnyPlayerName();
+		final PlayerName playerTwo = createAnyPlayerName();
+
+		tut.queueToPlay(playerOne);
+		tut.queueToPlay(playerTwo);
+
+		final TicTacToeGame ticTacToeGame = tut.prepareGame();
+
+		// when
+		final TicTacToeGameId gameReadyForPlayerOne = tut.getGameForPlayer(playerOne);
+		final TicTacToeGameId gameReadyForPlayerTwo = tut.getGameForPlayer(playerTwo);
+
+		// then
+		assertThat(ticTacToeGame.getGameId()).isEqualTo(gameReadyForPlayerOne);
+		assertThat(ticTacToeGame.getGameId()).isEqualTo(gameReadyForPlayerTwo);
 	}
 
 }
