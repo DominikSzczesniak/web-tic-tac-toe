@@ -31,7 +31,7 @@ public class MakeMoveRestInvoker {
 	@Data
 	@Builder
 	public static class MakeMoveDto {
-		private String playerName;
+		private String playerId;
 		private Integer rowIndex;
 		private Integer columnIndex;
 	}

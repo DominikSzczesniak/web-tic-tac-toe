@@ -8,14 +8,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class GetGameForPlayer {
+public class GetGameForPlayerRestInvoker {
 
 	private static final String URL = "/api/games";
 
 	public final TestRestTemplate restTemplate;
 
-	public ResponseEntity<Long> getGameForPlayer(final String playerName) {
-		final String urlWithParam = URL + "?playerName=" + playerName;
+	public ResponseEntity<Long> getGameForPlayer(final String playerId) {
+		final String urlWithParam = URL + "?playerId=" + playerId;
 		return restTemplate.exchange(
 				urlWithParam,
 				HttpMethod.GET,

@@ -29,7 +29,9 @@ public class PrepareGameControllerRestInvoker {
 	@Value
 	public static class TicTacToeGameDto {
 		String playerOne;
+		String playerOneId;
 		String playerTwo;
+		String playerTwoId;
 		Long gameId;
 	}
 

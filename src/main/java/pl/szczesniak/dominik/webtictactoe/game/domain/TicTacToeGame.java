@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.Player;
-import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.PlayerName;
 import pl.szczesniak.dominik.webtictactoe.game.domain.model.TicTacToeGameId;
 
 @EqualsAndHashCode
@@ -33,13 +32,6 @@ public class TicTacToeGame {
 		} else {
 			this.nextPlayerToMove = playerTwo;
 		}
-	}
-
-	Player getPlayerByName(final PlayerName playerName) {
-		if (playerOne.getName().equals(playerName)) {
-			return playerOne;
-		}
-		return playerTwo;
 	}
 
 }

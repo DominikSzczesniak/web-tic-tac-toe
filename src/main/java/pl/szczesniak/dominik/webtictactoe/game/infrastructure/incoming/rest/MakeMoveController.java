@@ -10,10 +10,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.GameResult;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.PlayerMove;
-import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.PlayerName;
 import pl.szczesniak.dominik.webtictactoe.game.domain.TicTacToeGameService;
 import pl.szczesniak.dominik.webtictactoe.game.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.game.domain.model.commands.MakeMove;
+
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
@@ -25,7 +26,7 @@ public class MakeMoveController {
 	public ResponseEntity<?> makeMove(@PathVariable final Long gameId, @RequestBody final MakeMoveDto makeMoveDto) {
 		final GameResult gameResult = ticTacToeGameService.makeMove(new MakeMove(
 				new TicTacToeGameId(gameId),
-				new PlayerName(makeMoveDto.getPlayerName()),
+				UUID.fromString(makeMoveDto.getPlayerId()),
 				new PlayerMove(makeMoveDto.getRowIndex(), makeMoveDto.getColumnIndex()))
 		);
 		final GameResultDto gameResultDto = toDto(gameResult);
@@ -44,7 +45,7 @@ public class MakeMoveController {
 
 	@Data
 	private static class MakeMoveDto {
-		private final String playerName;
+		private final String playerId;
 		private final Integer rowIndex;
 		private final Integer columnIndex;
 	}
