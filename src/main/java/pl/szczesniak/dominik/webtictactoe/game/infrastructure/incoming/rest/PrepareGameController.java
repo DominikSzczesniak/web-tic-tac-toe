@@ -24,7 +24,9 @@ public class PrepareGameController {
 	private static TicTacToeGameDto toDto(final TicTacToeGame game) {
 		return new TicTacToeGameDto(
 				game.getPlayerOne().getName().getValue(),
+				game.getPlayerOne().getPlayerID().toString(),
 				game.getPlayerTwo().getName().getValue(),
+				game.getPlayerTwo().getPlayerID().toString(),
 				game.getGameId().getValue()
 		);
 	}
@@ -32,7 +34,9 @@ public class PrepareGameController {
 	@Value
 	private static class TicTacToeGameDto {
 		String playerOne;
+		String playerOneId;
 		String playerTwo;
+		String playerTwoId;
 		Long gameId;
 	}
 

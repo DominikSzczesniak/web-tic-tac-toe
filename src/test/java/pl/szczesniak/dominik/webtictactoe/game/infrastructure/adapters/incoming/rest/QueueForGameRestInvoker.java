@@ -14,13 +14,13 @@ public class QueueForGameRestInvoker {
 
 	public final TestRestTemplate restTemplate;
 
-	public ResponseEntity<Void> queueForGame(final String username) {
+	public ResponseEntity<String> queueForGame(final String username) {
 		final String urlWithParam = URL + "?username=" + username;
 		return restTemplate.exchange(
 				urlWithParam,
 				HttpMethod.POST,
 				null,
-				Void.class
+				String.class
 		);
 	}
 

@@ -2,6 +2,7 @@ package pl.szczesniak.dominik.webtictactoe.game.domain;
 
 import org.springframework.stereotype.Service;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.SingleGame;
+import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.exceptions.OtherPlayerTurnException;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.GameResult;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.Player;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.PlayerMove;
@@ -12,9 +13,9 @@ import pl.szczesniak.dominik.webtictactoe.game.domain.model.commands.MakeMove;
 import pl.szczesniak.dominik.webtictactoe.game.domain.model.exceptions.GameDoesNotExistException;
 import pl.szczesniak.dominik.webtictactoe.game.domain.model.exceptions.NotEnoughPlayersException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -25,11 +26,20 @@ public class TicTacToeGameService {
 
 	private final ConcurrentHashMap<Long, SingleGame> singleGamesInProgress = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<TicTacToeGameId, TicTacToeGame> ticTacToeGames = new ConcurrentHashMap<>();
-	private final List<PlayerName> playersInQueue = new ArrayList<>();
+	private final ConcurrentHashMap<UUID, Player> playersInQueue = new ConcurrentHashMap<>();
 	private final AtomicLong id = new AtomicLong(1);
 
-	public void queueToPlay(final PlayerName playerName) {
-		playersInQueue.add(playerName);
+	public UUID queueToPlay(final PlayerName playerName) {
+		final Player player;
+
+		if (playersInQueue.size() == 0 || playersInQueue.size() % 2 == 0) {
+			player = new Player(new Symbol('O'), playerName);
+		} else {
+			player = new Player(new Symbol('X'), playerName);
+		}
+
+		playersInQueue.put(player.getPlayerID(), player);
+		return player.getPlayerID();
 	}
 
 	public TicTacToeGame prepareGame() {
@@ -43,7 +53,7 @@ public class TicTacToeGameService {
 		);
 
 		singleGamesInProgress.put(ticTacToeGame.getGameId().getValue(), game);
-		removePlayersFromQueue();
+		removePlayersFromQueue(ticTacToeGame.getPlayerOne().getPlayerID(), ticTacToeGame.getPlayerTwo().getPlayerID());
 
 		return ticTacToeGame;
 	}
@@ -55,9 +65,11 @@ public class TicTacToeGameService {
 	}
 
 	private TicTacToeGame createTicTacToeGame() {
+		final Player player1 = getPlayerWithSymbolO();
+		final Player player2 = getPlayerWithSymbolX();
 		final TicTacToeGame ticTacToeGame = new TicTacToeGame(
-				new Player(new Symbol('O'), playersInQueue.get(0)),
-				new Player(new Symbol('X'), playersInQueue.get(1)),
+				player1,
+				player2,
 				new TicTacToeGameId(id.getAndIncrement())
 		);
 		ticTacToeGame.setNextPlayerToMove();
@@ -65,33 +77,50 @@ public class TicTacToeGameService {
 		return ticTacToeGame;
 	}
 
-	private void removePlayersFromQueue() {
-		playersInQueue.remove(1);
-		playersInQueue.remove(0);
+	private Player getPlayerWithSymbolO() {
+		return playersInQueue.values().stream()
+				.filter(player -> player.getSymbol().equals(new Symbol('O')))
+				.findFirst()
+				.orElseThrow(() -> new NotEnoughPlayersException("Not enough players in queue to start a game."));
+	}
+
+	private Player getPlayerWithSymbolX() {
+		return playersInQueue.values().stream()
+				.filter(player -> player.getSymbol().equals(new Symbol('X')))
+				.findFirst()
+				.orElseThrow(() -> new NotEnoughPlayersException("Not enough players in queue to start a game."));
+	}
+
+	private void removePlayersFromQueue(final UUID playerOne, final UUID playerTwo) {
+		playersInQueue.remove(playerOne);
+		playersInQueue.remove(playerTwo);
 	}
 
 	public GameResult makeMove(final MakeMove command) {
 		final SingleGame singleGame = getSingleGame(command.getGameId());
 		final TicTacToeGame ticTacToeGame = getTicTacToeGame(command.getGameId());
 
-		final GameResult gameResult = resolvePlayerMove(command.getPlayerName(), command.getPlayerMove(), singleGame, ticTacToeGame);
+		final GameResult gameResult = resolvePlayerMove(command.getPlayerId(), command.getPlayerMove(), singleGame, ticTacToeGame);
 
 		singleGamesInProgress.put(command.getGameId().getValue(), singleGame);
 		ticTacToeGames.put(command.getGameId(), ticTacToeGame);
 		return gameResult;
 	}
 
-	private static GameResult resolvePlayerMove(final PlayerName playerName, final PlayerMove playerMove,
+	private static GameResult resolvePlayerMove(final UUID playerId, final PlayerMove playerMove,
 												final SingleGame singleGame, final TicTacToeGame ticTacToeGame) {
-		final Player player = ticTacToeGame.getPlayerByName(playerName);
-		final GameResult gameResult = singleGame.makeMove(player, playerMove);
-		ticTacToeGame.setNextPlayerToMove();
-		return gameResult;
+		final Player player = ticTacToeGame.getNextPlayerToMove();
+		if (player.getPlayerID().equals(playerId)) {
+			final GameResult gameResult = singleGame.makeMove(player, playerMove);
+			ticTacToeGame.setNextPlayerToMove();
+			return gameResult;
+		}
+		throw new OtherPlayerTurnException("Other player to move.");
 	}
 
-	public PlayerName getPlayerToMove(final TicTacToeGameId gameId) {
+	public UUID getPlayerToMove(final TicTacToeGameId gameId) {
 		final TicTacToeGame ticTacToeGame = getTicTacToeGame(gameId);
-		return ticTacToeGame.getNextPlayerToMove().getName();
+		return ticTacToeGame.getNextPlayerToMove().getPlayerID();
 	}
 
 	public Character[][] getBoardView(final Long gameId) {
@@ -99,8 +128,8 @@ public class TicTacToeGameService {
 		return singleGame.getBoardView();
 	}
 
-	List<PlayerName> getQueuedPlayers() {
-		return playersInQueue;
+	List<Player> getQueuedPlayers() {
+		return playersInQueue.values().stream().toList();
 	}
 
 	public void closeGame(final TicTacToeGameId ticTacToeGameId) {
@@ -118,13 +147,13 @@ public class TicTacToeGameService {
 				() -> new GameDoesNotExistException("Game with gameId=" + gameId.toString() + " does not exist"));
 	}
 
-	public TicTacToeGameId getGameForPlayer(final PlayerName playerName) {
+	public TicTacToeGameId getGameForPlayer(final UUID playerId) {
 		final Optional<TicTacToeGame> game = ticTacToeGames.values().stream()
 				.filter(ticTacToeGame ->
-						ticTacToeGame.getPlayerOne().getName().equals(playerName)
-						|| ticTacToeGame.getPlayerTwo().getName().equals(playerName))
+						ticTacToeGame.getPlayerOne().getPlayerID().equals(playerId)
+								|| ticTacToeGame.getPlayerTwo().getPlayerID().equals(playerId))
 				.findFirst();
-		return game.orElseThrow(() -> new GameDoesNotExistException("Game for player=" + playerName.getValue() + " does not exist")).getGameId();
+		return game.orElseThrow(() -> new GameDoesNotExistException("Game for player=" + playerId.toString() + " does not exist")).getGameId();
 	}
 
 }
