@@ -13,7 +13,6 @@ import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.MakeMoveRestInvoker.GameResultDto;
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.MakeMoveRestInvoker.MakeMoveDto;
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.PrepareGameControllerRestInvoker;
-import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.PrepareGameControllerRestInvoker.TicTacToeGameDto;
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.QueueForGameRestInvoker;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -55,31 +54,18 @@ public class GameIntegrationTests {
 		assertThat(queueForGamePlayerTwoResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
 		// when
-		final ResponseEntity<TicTacToeGameDto> prepareGameResponse = prepareGameForPlayersRest.prepareGame();
+		final ResponseEntity<Long> prepareGameResponse = prepareGameForPlayersRest.prepareGame();
 
 		// then
 		assertThat(prepareGameResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-		assertThat(prepareGameResponse.getBody().getPlayerOneId()).isEqualTo(queueForGamePlayerOneResponse.getBody());
-		assertThat(prepareGameResponse.getBody().getPlayerTwoId()).isEqualTo(queueForGamePlayerTwoResponse.getBody());
-	}
-
-	@Test
-	void game_should_be_ready_for_players() {
-		// given
-		final ResponseEntity<String> playerOneResponse = queueForGameRest.queueForGame(createAnyPlayerName().getValue());
-		final ResponseEntity<String> playerTwoResponse = queueForGameRest.queueForGame(createAnyPlayerName().getValue());
-
-		final ResponseEntity<TicTacToeGameDto> prepareGameResponseEntity = prepareGameForPlayersRest.prepareGame();
 
 		// when
-		final ResponseEntity<Long> isGameReadyForPlayerOneResponse = getGameForPlayerRest.getGameForPlayer(playerOneResponse.getBody());
-		final ResponseEntity<Long> isGameReadyForPlayerTwoResponse = getGameForPlayerRest.getGameForPlayer(playerTwoResponse.getBody());
+		final ResponseEntity<Long> gameForPlayerOneResponse = getGameForPlayerRest.getGameForPlayer(queueForGamePlayerOneResponse.getBody());
+		final ResponseEntity<Long> gameForPlayerTwoResponse = getGameForPlayerRest.getGameForPlayer(queueForGamePlayerTwoResponse.getBody());
 
 		// then
-		assertThat(isGameReadyForPlayerOneResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-		assertThat(isGameReadyForPlayerTwoResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-		assertThat(isGameReadyForPlayerOneResponse.getBody()).isEqualTo(prepareGameResponseEntity.getBody().getGameId());
-		assertThat(isGameReadyForPlayerOneResponse.getBody()).isEqualTo(isGameReadyForPlayerTwoResponse.getBody());
+		assertThat(prepareGameResponse.getBody()).isEqualTo(gameForPlayerOneResponse.getBody());
+		assertThat(prepareGameResponse.getBody()).isEqualTo(gameForPlayerTwoResponse.getBody());
 	}
 
 	@Test
@@ -90,8 +76,8 @@ public class GameIntegrationTests {
 		final ResponseEntity<String> playerOneResponse = queueForGameRest.queueForGame(playerOneName);
 		final ResponseEntity<String> playerTwoResponse = queueForGameRest.queueForGame(playerTwoName);
 
-		final ResponseEntity<TicTacToeGameDto> checkGameIsReadyResponse = prepareGameForPlayersRest.prepareGame();
-		final Long gameId = checkGameIsReadyResponse.getBody().getGameId();
+		final ResponseEntity<Long> checkGameIsReadyResponse = prepareGameForPlayersRest.prepareGame();
+		final Long gameId = checkGameIsReadyResponse.getBody();
 
 		// when
 		final ResponseEntity<GameResultDto> makeMoveResult_1 = makeMoveRest.makeMove(
@@ -171,8 +157,8 @@ public class GameIntegrationTests {
 		final String playerOneId = playerOneResponse.getBody();
 		final String playerTwoId = playerTwoResponse.getBody();
 
-		final ResponseEntity<TicTacToeGameDto> checkGameIsReadyResponse = prepareGameForPlayersRest.prepareGame();
-		final Long gameId = checkGameIsReadyResponse.getBody().getGameId();
+		final ResponseEntity<Long> checkGameIsReadyResponse = prepareGameForPlayersRest.prepareGame();
+		final Long gameId = checkGameIsReadyResponse.getBody();
 
 		// when
 		final ResponseEntity<String> playerToMoveResponse_1 = getWhichPlayerToMoveRest.getWhichPlayerToMove(gameId);

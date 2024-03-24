@@ -57,4 +57,7 @@ public class MatchmakingService {
 		return playersInQueue.values().stream().toList();
 	}
 
+	List<Player> getPlayersForGame() {
+		return List.of(getPlayerWithSymbolO(), getPlayerWithSymbolX());
+	}
 }

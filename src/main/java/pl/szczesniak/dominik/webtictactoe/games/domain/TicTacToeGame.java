@@ -12,7 +12,7 @@ import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 @ToString
 @Getter
 @RequiredArgsConstructor
-public class TicTacToeGame {
+class TicTacToeGame {
 
 	@NonNull private final TicTacToeGameId gameId;
 

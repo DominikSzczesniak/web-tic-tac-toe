@@ -44,11 +44,14 @@ class TicTacToeGamesServiceTest {
 		final UUID playerTwo = tut.queueToPlay(createAnyPlayerName());
 
 		// when
-		final TicTacToeGame ticTacToeGame = tut.prepareGame();
+		final TicTacToeGameId ticTacToeGame = tut.prepareGame();
 
 		// then
-		assertThat(ticTacToeGame.getPlayerOne().getPlayerID()).isEqualTo(playerOne);
-		assertThat(ticTacToeGame.getPlayerTwo().getPlayerID()).isEqualTo(playerTwo);
+		final TicTacToeGameId gameForPlayerOne = tut.getGameForPlayer(playerOne);
+		final TicTacToeGameId gameForPlayerTwo = tut.getGameForPlayer(playerTwo);
+		assertThat(gameForPlayerOne).isEqualTo(gameForPlayerTwo);
+		assertThat(gameForPlayerOne).isEqualTo(ticTacToeGame);
+		assertThat(gameForPlayerTwo).isEqualTo(ticTacToeGame);
 		assertThat(tut.getQueuedPlayers()).hasSize(0);
 	}
 
@@ -59,9 +62,10 @@ class TicTacToeGamesServiceTest {
 		final UUID playerTwoId = tut.queueToPlay(createAnyPlayerName());
 
 		// when
-		final TicTacToeGame ticTacToeGame = tut.prepareGame();
+		final TicTacToeGameId ticTacToeGameId = tut.prepareGame();
 
 		// then
+		final TicTacToeGame ticTacToeGame = tut.getTicTacToeGame(ticTacToeGameId);
 		assertThat(ticTacToeGame.getPlayerOne().getPlayerID()).isEqualTo(playerOneId);
 		assertThat(ticTacToeGame.getPlayerOne().getSymbol()).isEqualTo(new Symbol('O'));
 		assertThat(ticTacToeGame.getPlayerTwo().getPlayerID()).isEqualTo(playerTwoId);
@@ -104,10 +108,12 @@ class TicTacToeGamesServiceTest {
 		tut.queueToPlay(createAnyPlayerName());
 
 		// when
-		final TicTacToeGame ticTacToeGame_1 = tut.prepareGame();
-		final TicTacToeGame ticTacToeGame_2 = tut.prepareGame();
+		final TicTacToeGameId ticTacToeGameId_1 = tut.prepareGame();
+		final TicTacToeGameId ticTacToeGameId_2 = tut.prepareGame();
 
 		// then
+		final TicTacToeGame ticTacToeGame_1 = tut.getTicTacToeGame(ticTacToeGameId_1);
+		final TicTacToeGame ticTacToeGame_2 = tut.getTicTacToeGame(ticTacToeGameId_2);
 		assertThat(ticTacToeGame_1.getPlayerOne().getSymbol()).isNotEqualTo(ticTacToeGame_1.getPlayerTwo().getSymbol());
 		assertThat(ticTacToeGame_2.getPlayerOne().getSymbol()).isNotEqualTo(ticTacToeGame_2.getPlayerTwo().getSymbol());
 	}
@@ -118,12 +124,12 @@ class TicTacToeGamesServiceTest {
 		final UUID player = tut.queueToPlay(createAnyPlayerName());
 		tut.queueToPlay(createAnyPlayerName());
 
-		final TicTacToeGame ticTacToeGame = tut.prepareGame();
-		tut.closeGame(ticTacToeGame.getGameId());
+		final TicTacToeGameId ticTacToeGame = tut.prepareGame();
+		tut.closeGame(ticTacToeGame);
 
 		// when
 		final Throwable thrown = catchThrowable(() -> tut.makeMove(MakeMoveSample.builder()
-				.ticTacToeGameId(ticTacToeGame.getGameId()).playerId(player).build()));
+				.ticTacToeGameId(ticTacToeGame).playerId(player).build()));
 
 		// then
 		assertThat(thrown).isInstanceOf(GameDoesNotExistException.class);
@@ -135,19 +141,19 @@ class TicTacToeGamesServiceTest {
 		final UUID playerOne = tut.queueToPlay(createAnyPlayerName());
 		final UUID playerTwo = tut.queueToPlay(createAnyPlayerName());
 
-		final TicTacToeGame ticTacToeGame = tut.prepareGame();
+		final TicTacToeGameId ticTacToeGame = tut.prepareGame();
 
 		// when
-		final UUID playerToMove = tut.getPlayerToMove(ticTacToeGame.getGameId());
+		final UUID playerToMove = tut.getPlayerToMove(ticTacToeGame);
 
 		// then
 		assertThat(playerToMove).isEqualTo(playerOne);
 
 		// when
-		tut.makeMove(MakeMoveSample.builder().playerId(playerOne).ticTacToeGameId(ticTacToeGame.getGameId()).build());
+		tut.makeMove(MakeMoveSample.builder().playerId(playerOne).ticTacToeGameId(ticTacToeGame).build());
 
 		// then
-		assertThat(tut.getPlayerToMove(ticTacToeGame.getGameId())).isEqualTo(playerTwo);
+		assertThat(tut.getPlayerToMove(ticTacToeGame)).isEqualTo(playerTwo);
 	}
 
 	@Test
@@ -156,13 +162,13 @@ class TicTacToeGamesServiceTest {
 		final UUID playerOne = tut.queueToPlay(createAnyPlayerName());
 		final UUID playerTwo = tut.queueToPlay(createAnyPlayerName());
 
-		final TicTacToeGame ticTacToeGame = tut.prepareGame();
-		final UUID playerToMove = tut.getPlayerToMove(ticTacToeGame.getGameId());
+		final TicTacToeGameId ticTacToeGame = tut.prepareGame();
+		final UUID playerToMove = tut.getPlayerToMove(ticTacToeGame);
 		assertThat(playerToMove).isEqualTo(playerOne);
 
 		// when
 		final Throwable thrown = catchThrowable(() -> tut.makeMove(MakeMoveSample.builder()
-				.ticTacToeGameId(ticTacToeGame.getGameId()).playerId(playerTwo).build()));
+				.ticTacToeGameId(ticTacToeGame).playerId(playerTwo).build()));
 
 		// then
 		assertThat(thrown).isInstanceOf(OtherPlayerTurnException.class);
@@ -175,15 +181,15 @@ class TicTacToeGamesServiceTest {
 		final UUID playerOne = tut.queueToPlay(createAnyPlayerName());
 		final UUID playerTwo = tut.queueToPlay(createAnyPlayerName());
 
-		final TicTacToeGame ticTacToeGame = tut.prepareGame();
+		final TicTacToeGameId ticTacToeGame = tut.prepareGame();
 
 		// when
 		final TicTacToeGameId gameReadyForPlayerOne = tut.getGameForPlayer(playerOne);
 		final TicTacToeGameId gameReadyForPlayerTwo = tut.getGameForPlayer(playerTwo);
 
 		// then
-		assertThat(ticTacToeGame.getGameId()).isEqualTo(gameReadyForPlayerOne);
-		assertThat(ticTacToeGame.getGameId()).isEqualTo(gameReadyForPlayerTwo);
+		assertThat(ticTacToeGame).isEqualTo(gameReadyForPlayerOne);
+		assertThat(ticTacToeGame).isEqualTo(gameReadyForPlayerTwo);
 	}
 
 	@Test

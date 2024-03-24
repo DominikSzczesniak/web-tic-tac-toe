@@ -33,7 +33,7 @@ public class TicTacToeGamesService {
 		return matchmakingService.addPlayerToQueue(playerName);
 	}
 
-	public TicTacToeGame prepareGame() {
+	public TicTacToeGameId prepareGame() {
 		matchmakingService.checkEnoughPlayersForAGameInQueue();
 
 		final TicTacToeGame ticTacToeGame = createTicTacToeGame();
@@ -46,16 +46,15 @@ public class TicTacToeGamesService {
 		singleGamesInProgress.put(ticTacToeGame.getGameId().getValue(), game);
 		matchmakingService.removePlayersFromQueue(ticTacToeGame.getPlayerOne().getPlayerID(), ticTacToeGame.getPlayerTwo().getPlayerID());
 
-		return ticTacToeGame;
+		return ticTacToeGame.getGameId();
 	}
 
 	private TicTacToeGame createTicTacToeGame() {
-		final Player player1 = matchmakingService.getPlayerWithSymbolO();
-		final Player player2 = matchmakingService.getPlayerWithSymbolX();
+		final List<Player> players = matchmakingService.getPlayersForGame();
 		final TicTacToeGame ticTacToeGame = new TicTacToeGame(
 				new TicTacToeGameId(id.getAndIncrement()),
-				player1,
-				player2
+				players.get(0),
+				players.get(1)
 		);
 		ticTacToeGame.setNextPlayerToMove();
 		ticTacToeGames.put(ticTacToeGame.getGameId(), ticTacToeGame);
@@ -108,7 +107,7 @@ public class TicTacToeGamesService {
 				() -> new GameDoesNotExistException("No game with this gameId exists: " + gameId)));
 	}
 
-	private TicTacToeGame getTicTacToeGame(final TicTacToeGameId gameId) {
+	TicTacToeGame getTicTacToeGame(final TicTacToeGameId gameId) {
 		return ofNullable(ticTacToeGames.get(gameId)).orElseThrow(
 				() -> new GameDoesNotExistException("Game with gameId=" + gameId.toString() + " does not exist"));
 	}
