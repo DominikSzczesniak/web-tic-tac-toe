@@ -1,5 +1,6 @@
 package pl.szczesniak.dominik.webtictactoe.games.domain;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.SingleGame;
@@ -21,7 +22,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import static java.util.Optional.ofNullable;
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class TicTacToeGamesService {
 
 	private final MatchmakingService matchmakingService;

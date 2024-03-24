@@ -11,7 +11,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class MatchmakingService {
+class MatchmakingService {
 
 	private final ConcurrentHashMap<UUID, Player> playersInQueue = new ConcurrentHashMap<>();
 
