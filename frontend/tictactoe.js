@@ -1,7 +1,9 @@
 let intervalForFetchingBoard;
+let intervalForUpdatingPlayerToMove;
+let username;
 
 function queueForGame() {
-    const username = document.getElementById('usernameInput').value;
+    username = document.getElementById('usernameInput').value;
 
     fetch(`http://localhost:8080/api/games/queue?username=${encodeURIComponent(username)}`, {
         method: 'POST',
@@ -17,6 +19,8 @@ function queueForGame() {
             }
         })
         .then(playerId => {
+            hideQueueForm();
+            showInQueue();
             console.log('Player queued successfully with playerId:', playerId);
             const intervalId = setInterval(() => {
                 getGameForPlayer(playerId)
@@ -44,6 +48,7 @@ function getGameForPlayer(playerId) {
         })
             .then(response => {
                 if (response.ok) {
+                    hideInQueue()
                     return response.json();
                 } else {
                     throw new Error('Bad request');
@@ -61,12 +66,14 @@ function getGameForPlayer(playerId) {
 function handleGameForPlayer(gameId, playerId) {
     if (gameId) {
         console.log('Game found for player with ID:', playerId);
-        clearAndHideQueueForm()
+        hideQueueForm()
         intervalForFetchingBoard = setInterval(async () => {
-            updatePlayerToMove(gameId, playerId);
             const board = await getBoardView(gameId, playerId);
             renderBoard(board, gameId, playerId);
         }, 1000);
+        intervalForUpdatingPlayerToMove = setInterval(async () => {
+            await updatePlayerToMove(gameId, playerId);
+        }, 999);
     }
 }
 
@@ -80,7 +87,7 @@ async function getBoardView(gameId) {
         });
 
         if (!response.ok) {
-            showQueueForm(); // todo: to jest dla tego, co przegrywa
+            showQueueForm();
         }
 
         const data = await response.json();
@@ -90,10 +97,11 @@ async function getBoardView(gameId) {
     } catch (error) {
         console.error('Error getting board view:', error);
         clearInterval(intervalForFetchingBoard);
+        showQueueForm();
     }
 }
 
-function renderBoard(board, gameId, playerId) {
+function renderBoard(board, gameId, playerId, whoWon) {
     const boardContainer = document.getElementById("boardContainer");
     boardContainer.innerHTML = "";
 
@@ -107,10 +115,20 @@ function renderBoard(board, gameId, playerId) {
             const td = document.createElement("td");
             td.textContent = cell;
 
-            // Check for win if required
-            const winningLine = checkForWin(board, rowIndex, colIndex);
+            const winningLine = getWinningLine(board, rowIndex, colIndex);
             if (winningLine && winningLine.some(([r, c]) => r === rowIndex && c === colIndex)) {
-                td.classList.add("winning-cell");
+                colorCells(whoWon, td);
+                if (whoWon !== username) {
+                    clearInterval(intervalForUpdatingPlayerToMove);
+                    document.getElementById('playerThatWon').innerText = 'Opponent won';
+                    hidePlayerToMove();
+                }
+            }
+
+            if (isBoardFull(board)) {
+                clearInterval(intervalForUpdatingPlayerToMove);
+                document.getElementById('playerThatWon').innerText = 'Draw';
+                hidePlayerToMove();
             }
 
             td.addEventListener('click', function () {
@@ -126,13 +144,13 @@ function renderBoard(board, gameId, playerId) {
     boardContainer.appendChild(table);
 }
 
-function checkForWin(board, row, col) {
+function getWinningLine(board, row, col) {
     const playerSymbol = board[row][col];
     const directions = [
-        [-1, 0], // vertical
-        [0, -1], // horizontal
-        [-1, -1], // diagonal \
-        [-1, 1] // diagonal /
+        [-1, 0],
+        [0, -1],
+        [-1, -1],
+        [-1, 1]
     ];
 
     if (playerSymbol !== "O" && playerSymbol !== "X") {
@@ -142,24 +160,26 @@ function checkForWin(board, row, col) {
     for (const [dx, dy] of directions) {
         let count = 0;
         let winningLine = [[row, col]];
-        let r = row + dx;
-        let c = col + dy;
+        let currentRow = row + dx;
+        let currentColumn = col + dy;
 
-        while (r >= 0 && r < board.length && c >= 0 && c < board[0].length && board[r][c] === playerSymbol) {
+        while (currentRow >= 0 && currentRow < board.length && currentColumn >= 0
+        && currentColumn < board[0].length && board[currentRow][currentColumn] === playerSymbol) {
             count++;
-            winningLine.push([r, c]);
-            r += dx;
-            c += dy;
+            winningLine.push([currentRow, currentColumn]);
+            currentRow += dx;
+            currentColumn += dy;
         }
 
-        r = row - dx;
-        c = col - dy;
+        currentRow = row - dx;
+        currentColumn = col - dy;
 
-        while (r >= 0 && r < board.length && c >= 0 && c < board[0].length && board[r][c] === playerSymbol) {
+        while (currentRow >= 0 && currentRow < board.length && currentColumn >= 0
+        && currentColumn < board[0].length && board[currentRow][currentColumn] === playerSymbol) {
             count++;
-            winningLine.push([r, c]);
-            r -= dx;
-            c -= dy;
+            winningLine.push([currentRow, currentColumn]);
+            currentRow -= dx;
+            currentColumn -= dy;
         }
 
         if (count >= 2) {
@@ -170,13 +190,31 @@ function checkForWin(board, row, col) {
     return null;
 }
 
+function isBoardFull(board) {
+    for (let row = 0; row < board.length; row++) {
+        for (let col = 0; col < board[0].length; col++) {
+            if (board[row][col] === null) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+function colorCells(whoWon, td) {
+    if (whoWon === username) {
+        td.classList.add("winning-cell");
+    } else {
+        td.classList.add("losing-cell")
+    }
+}
+
 function makeMove(gameId, playerId, rowIndex, columnIndex) {
     const makeMoveDto = {
         playerId: playerId,
         rowIndex: rowIndex,
         columnIndex: columnIndex
     };
-    console.log('moj log', playerId, rowIndex, columnIndex);
 
     fetch(`http://localhost:8080/api/games/${gameId}/move`, {
         method: 'POST',
@@ -194,14 +232,8 @@ function makeMove(gameId, playerId, rowIndex, columnIndex) {
         })
         .then(async data => {
             const gameStatus = data.gameStatus;
-            if (gameStatus === 'DRAW' || gameStatus === 'WIN') { // todo: usunac czyja tura, zamienic na kto wygral
-                const board = await getBoardView(gameId, playerId);
-                renderBoard(board, gameId, playerId);
-                setTimeout(function () {
-                    closeGame(gameId);
-                    showQueueForm()
-                }, 3000);
-            }
+            const whoWon = data.playerThatWon;
+            await handleGameFinished(data, gameId, playerId, whoWon);
             console.log('Game result:', gameStatus);
         })
         .catch(error => {
@@ -209,14 +241,65 @@ function makeMove(gameId, playerId, rowIndex, columnIndex) {
         });
 }
 
-function clearAndHideQueueForm() {
-    document.getElementById('queueForm').style.display = 'none';
-    document.getElementById('boardContainer').style.display = 'block';
-
+async function handleGameFinished(data, gameId, playerId, whoWon) {
+    const gameStatus = data.gameStatus;
+    if (gameStatus === 'DRAW' || gameStatus === 'WIN') {
+        showWhoWon(data);
+        hidePlayerToMove();
+        clearInterval(intervalForFetchingBoard);
+        clearInterval(intervalForUpdatingPlayerToMove);
+        const board = await getBoardView(gameId, playerId);
+        renderBoard(board, gameId, playerId, whoWon);
+        setTimeout(function () {
+            closeGame(gameId);
+            hideBoard();
+            showQueueForm();
+        }, 3000);
+    }
 }
-function showQueueForm() {
-    document.getElementById('queueForm').style.display = 'block';
-    document.getElementById('boardContainer').style.display = 'none';
+
+function closeGame(gameId) {
+    fetch(`http://localhost:8080/api/games/${gameId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => {
+            if (response.ok) {
+                console.log(`Game with ID ${gameId} successfully closed.`);
+            } else {
+                throw new Error(`Failed to close game with ID ${gameId}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error closing game:', error);
+        });
+}
+
+async function updatePlayerToMove(gameId, playerId) {
+    const playerToMoveElement = document.getElementById('playerToMove');
+    const playerToMove = await fetchPlayerToMove(gameId);
+    if (playerToMove !== null) {
+        if (playerToMove === playerId) {
+            playerToMoveElement.textContent = "Your turn";
+        } else {
+            playerToMoveElement.textContent = "Opponent's turn";
+        }
+    } else {
+        playerToMoveElement.textContent = 'Failed to fetch player to move.';
+    }
+}
+
+async function fetchPlayerToMove(gameId) {
+    try {
+        const response = await fetch(`http://localhost:8080/api/games/${gameId}/move`);
+        const data = await response.text();
+        return data;
+    } catch (error) {
+        console.error('Error fetching player to move:', error);
+        return null;
+    }
 }
 
 function prepareGame() {
@@ -241,46 +324,49 @@ function prepareGame() {
         });
 }
 
-function closeGame(gameId) {
-    fetch(`http://localhost:8080/api/games/${gameId}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-        .then(response => {
-            if (response.ok) {
-                console.log(`Game with ID ${gameId} successfully closed.`);
-            } else {
-                throw new Error(`Failed to close game with ID ${gameId}`);
-            }
-        })
-        .catch(error => {
-            console.error('Error closing game:', error);
-        });
-}
-
-async function fetchPlayerToMove(gameId) {
-    try {
-        const response = await fetch(`http://localhost:8080/api/games/${gameId}/move`);
-        const data = await response.text();
-        return data;
-    } catch (error) {
-        console.error('Error fetching player to move:', error);
-        return null;
-    }
-}
-
-async function updatePlayerToMove(gameId, playerId) {
-    const playerToMoveElement = document.getElementById('playerToMove');
-    const playerToMove = await fetchPlayerToMove(gameId);
-    if (playerToMove !== null) {
-        if (playerToMove === playerId) {
-            playerToMoveElement.textContent = "Your turn";
-        } else {
-            playerToMoveElement.textContent = "Opponent's turn";
-        }
+function showWhoWon(data) {
+    const whoWon = data.playerThatWon;
+    const gameStatus = data.gameStatus;
+    if (gameStatus === 'DRAW') {
+        document.getElementById('playerThatWon').innerText = 'Draw'
+    } else if (whoWon === username) {
+        document.getElementById('playerThatWon').innerText = 'You won'
     } else {
-        playerToMoveElement.textContent = 'Failed to fetch player to move.';
+        document.getElementById('playerThatWon').innerText = 'Opponent won'
     }
 }
+
+function hidePlayerToMove() {
+    document.getElementById('playerToMove').innerText = '';
+}
+
+function hideQueueForm() {
+    document.getElementById('queueForm').style.display = 'none';
+    document.getElementById('boardContainer').style.display = 'block';
+    document.getElementById('playerToMove').innerText = ''
+
+}
+
+function showQueueForm() {
+    document.getElementById('queueForm').style.display = 'block';
+    document.getElementById('playerToMove').innerText = ''
+    document.getElementById('playerThatWon').innerText = ''
+}
+
+function hideBoard() {
+    document.getElementById('boardContainer').innerText = '';
+}
+
+function showInQueue() {
+    const queueBox = document.getElementById('queueBox');
+    queueBox.style.display = 'block';
+}
+
+function hideInQueue() {
+    const queueBox = document.getElementById('queueBox');
+    queueBox.style.display = 'none';
+}
+
+
+
+

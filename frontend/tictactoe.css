@@ -42,9 +42,26 @@ button {
 .winning-cell {
     background-color: green;
 }
+.losing-cell {
+    background-color: red;
+}
 
 .hidden {
     display: none;
     opacity: 0;
     transition: opacity 0.5s ease-out;
+}
+
+.box {
+    display: none;
+    width: 200px;
+    height: 100px;
+    background-color: #f0f0f0;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    text-align: center;
+    line-height: 100px;
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+    margin: 100px auto;
 }
