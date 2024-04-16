@@ -2,6 +2,7 @@ package pl.szczesniak.dominik.webtictactoe.games.infrastructure.incoming.rest;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,6 +13,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
 public class QueueForGameController {
 
 	private final TicTacToeGamesService ticTacToeGamesService;
