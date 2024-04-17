@@ -36,40 +36,6 @@ function PrepareGame({handlePrepareGame}) {
 
 function Board({boardView, gameId, playerId, setPlayerToMove}) {
 
-    function isWinningMove(board) {
-        const winningLines = [
-            [board[0][0], board[0][1], board[0][2]],
-            [board[1][0], board[1][1], board[1][2]],
-            [board[2][0], board[2][1], board[2][2]],
-
-            [board[0][0], board[1][0], board[2][0]],
-            [board[0][1], board[1][1], board[2][1]],
-            [board[0][2], board[1][2], board[2][2]],
-
-            [board[0][0], board[1][1], board[2][2]],
-            [board[0][2], board[1][1], board[2][0]]
-        ];
-
-        for (const winningLine of winningLines) {
-            if (winningLine.every(symbol => symbol !== null && symbol === winningLine[0])) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    function isDraw(board) {
-        for (const row of board) {
-            for (const cell of row) {
-                if (cell === null) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
     async function makeMove(rowIndex, columnIndex) {
         try {
             const response = await fetch(`http://localhost:8080/api/games/${gameId}/move`, {
@@ -120,8 +86,53 @@ function App() {
     const [username, setUsername] = useState('');
     const [playerId, setPlayerId] = useState('');
     const [gameId, setGameId] = useState('');
-    const [boardView, setBoardView] = useState(null);
+    const [boardView, setBoardView] = useState([]);
     const [isPlayerTurn, setIsPlayerTurn] = useState(null);
+    const [winner, setWinner] = useState(null);
+
+    function isWinningMove(board) {
+        const winningLines = [
+            [board[0][0], board[0][1], board[0][2]],
+            [board[1][0], board[1][1], board[1][2]],
+            [board[2][0], board[2][1], board[2][2]],
+
+            [board[0][0], board[1][0], board[2][0]],
+            [board[0][1], board[1][1], board[2][1]],
+            [board[0][2], board[1][2], board[2][2]],
+
+            [board[0][0], board[1][1], board[2][2]],
+            [board[0][2], board[1][1], board[2][0]]
+        ];
+
+        for (const winningLine of winningLines) {
+            if (winningLine.every(symbol => symbol !== null && symbol === winningLine[0])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function isDraw(board) {
+        for (const row of board) {
+            for (const cell of row) {
+                if (cell === null) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    function checkGameStatus(board, intervalId) {
+        if (isWinningMove(board)) {
+            setWinner(isPlayerTurn ? 'Opponent' : 'You');
+            clearInterval(intervalId)
+        } else if (isDraw(board)) {
+            setWinner('Draw');
+            clearInterval(intervalId)
+        }
+    }
 
 
     useEffect(() => {
@@ -159,6 +170,7 @@ function App() {
                     const data = await response.json();
                     setBoardView(data);
                     console.log("updated board ", data);
+                    checkGameStatus(data, intervalId)
                 } catch (error) {
                     console.error('Error fetching board view:', error);
                 }
@@ -248,7 +260,10 @@ function App() {
                         playerId={playerId}
                         setPlayerToMove={setIsPlayerTurn}
                     />
-                    <h2>{isPlayerTurn ? 'Your turn' : 'Opponent\'s turn'}</h2>
+                    {(winner === null && !isDraw(boardView)) && (
+                        <h2>{isPlayerTurn ? 'Your turn' : 'Opponent\'s turn'}</h2>
+                    )}
+                    {winner && <h2>{winner === 'Draw' ? 'It\'s a draw!' : `${winner} won!`}</h2>}
                 </div>
             ) : (
                 <div>
