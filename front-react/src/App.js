@@ -1,14 +1,36 @@
 import {useEffect, useState} from 'react';
 
-function QueueForGame({username, setUsername, handleQueueForGame}) {
+function QueueForGame({username, setUsername, setPlayerId}) {
+
+    async function queueForGame() {
+        try {
+            const response = await fetch(`http://localhost:8080/api/games/queue?username=${encodeURIComponent(username)}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Bad request');
+            }
+
+            const data = await response.text();
+            setPlayerId(data);
+            console.log('Player queued successfully with playerId:', data);
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
     function handleUsernameChange(event) {
         setUsername(event.target.value);
     }
 
     const handleQueueClick = () => {
-        handleQueueForGame(username);
+        queueForGame();
     };
+
 
     return (
         <div className="queue-for-game-container">
@@ -24,13 +46,62 @@ function QueueForGame({username, setUsername, handleQueueForGame}) {
 
 function PrepareGame({handlePrepareGame}) {
 
+    async function prepareGame() {
+        try {
+            const response = await fetch('http://localhost:8080/api/games', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Error preparing game');
+            }
+
+            const data = await response.text();
+            console.log('Game prepared with ID:', data);
+            handlePrepareGame(data);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     return (
         <div className="prepare-game-container">
             <div>
-                <button onClick={handlePrepareGame}>Prepare Game</button>
+                <button onClick={prepareGame}>Prepare Game</button>
             </div>
         </div>
     );
+}
+
+function GetGameForPlayer({playerId, onGameIdChange}) {
+    useEffect(() => {
+        if (playerId) {
+            const interval = setInterval(() => {
+                fetch(`http://localhost:8080/api/games?playerId=${playerId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        onGameIdChange(data);
+                        console.log("game fetched with id ", data)
+                        clearInterval(interval);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching game:', error);
+                    });
+            }, 5000);
+
+            return () => clearInterval(interval);
+        }
+    }, [playerId, onGameIdChange]);
+
+    return null;
 }
 
 
@@ -182,72 +253,8 @@ function App() {
         return () => clearInterval(intervalId);
     }, [gameId, isPlayerTurn]);
 
-    async function handleQueueForGame(username) {
-        try {
-            const response = await fetch(`http://localhost:8080/api/games/queue?username=${encodeURIComponent(username)}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Bad request');
-            }
-
-            const data = await response.text();
-            setPlayerId(data);
-            console.log('Player queued successfully with playerId:', data);
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    async function handlePrepareGame() {
-        try {
-            const response = await fetch('http://localhost:8080/api/games', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Error preparing game');
-            }
-
-            const data = await response.text();
-            console.log('Game prepared with ID:', data);
-            setGameId(data);
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    function GetGameForPlayer({playerId, onGameIdChange}) {
-        useEffect(() => {
-            if (playerId) {
-                const interval = setInterval(() => {
-                    fetch(`http://localhost:8080/api/games?playerId=${playerId}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            onGameIdChange(data);
-                            console.log("game fetched with id ", data)
-                            clearInterval(interval);
-                        })
-                        .catch(error => {
-                            console.error('Error fetching game:', error);
-                        });
-                }, 5000);
-
-                return () => clearInterval(interval);
-            }
-        }, [playerId, onGameIdChange]);
+    function handlePrepareGame(data) {
+        setGameId(data);
     }
 
     return (
@@ -271,7 +278,7 @@ function App() {
                         username={username}
                         setUsername={setUsername}
                         playerId={playerId}
-                        handleQueueForGame={handleQueueForGame}
+                        setPlayerId={setPlayerId}
                     />
                     <PrepareGame
                         gameId={gameId}
