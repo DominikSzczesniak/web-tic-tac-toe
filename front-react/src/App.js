@@ -105,7 +105,7 @@ function GetGameForPlayer({playerId, onGameIdChange}) {
 }
 
 
-function Board({boardView, gameId, playerId, setPlayerToMove}) {
+function Board({boardView, gameId, playerId, setPlayerToMove, winningCells, winner}) {
 
     async function makeMove(rowIndex, columnIndex) {
         try {
@@ -139,7 +139,11 @@ function Board({boardView, gameId, playerId, setPlayerToMove}) {
                         {boardView.map((row, rowIndex) => (
                             <tr key={rowIndex}>
                                 {row.map((cell, columnIndex) => (
-                                    <td key={columnIndex} onClick={() => makeMove(rowIndex, columnIndex)}>
+                                    <td
+                                        key={columnIndex}
+                                        onClick={() => makeMove(rowIndex, columnIndex)}
+                                        className={winningCells && winningCells.some(([row, col]) => row === rowIndex && col === columnIndex) ? (playerId === winner ? 'winning-cell-green' : 'winning-cell-red') : ''}
+                                    >
                                         {cell === null ? '' : cell}
                                     </td>
                                 ))}
@@ -160,28 +164,39 @@ function App() {
     const [boardView, setBoardView] = useState([]);
     const [isPlayerTurn, setIsPlayerTurn] = useState(null);
     const [winner, setWinner] = useState(null);
+    const [winningCells, setWinningCells] = useState(null);
 
-    function isWinningMove(board) {
+    useEffect(() => {
+        if (boardView.length > 0) {
+            const winningCells = checkForWinningLine(boardView);
+            setWinningCells(winningCells);
+        }
+    }, [boardView]);
+
+    function checkForWinningLine(board) {
         const winningLines = [
-            [board[0][0], board[0][1], board[0][2]],
-            [board[1][0], board[1][1], board[1][2]],
-            [board[2][0], board[2][1], board[2][2]],
-
-            [board[0][0], board[1][0], board[2][0]],
-            [board[0][1], board[1][1], board[2][1]],
-            [board[0][2], board[1][2], board[2][2]],
-
-            [board[0][0], board[1][1], board[2][2]],
-            [board[0][2], board[1][1], board[2][0]]
+            [[0, 0], [0, 1], [0, 2]],
+            [[1, 0], [1, 1], [1, 2]],
+            [[2, 0], [2, 1], [2, 2]],
+            [[0, 0], [1, 0], [2, 0]],
+            [[0, 1], [1, 1], [2, 1]],
+            [[0, 2], [1, 2], [2, 2]],
+            [[0, 0], [1, 1], [2, 2]],
+            [[0, 2], [1, 1], [2, 0]]
         ];
 
-        for (const winningLine of winningLines) {
-            if (winningLine.every(symbol => symbol !== null && symbol === winningLine[0])) {
-                return true;
+        for (const line of winningLines) {
+            const symbols = line.map(([row, col]) => board[row][col]);
+            if (symbols.every(val => val === symbols[0] && val !== null)) {
+                return line;
             }
         }
 
-        return false;
+        return null;
+    }
+
+    function isWinningMove(board) {
+        return !!checkForWinningLine(board);
     }
 
     function isDraw(board) {
@@ -197,7 +212,7 @@ function App() {
 
     function checkGameStatus(board, intervalId) {
         if (isWinningMove(board)) {
-            setWinner(isPlayerTurn ? 'Opponent' : 'You');
+            setWinner(isPlayerTurn ? 'Opponent' : playerId);
             clearInterval(intervalId)
         } else if (isDraw(board)) {
             setWinner('Draw');
@@ -266,11 +281,17 @@ function App() {
                         gameId={gameId}
                         playerId={playerId}
                         setPlayerToMove={setIsPlayerTurn}
+                        winningCells={winningCells}
+                        winner={winner}
                     />
                     {(winner === null && !isDraw(boardView)) && (
                         <h2>{isPlayerTurn ? 'Your turn' : 'Opponent\'s turn'}</h2>
                     )}
-                    {winner && <h2>{winner === 'Draw' ? 'It\'s a draw!' : `${winner} won!`}</h2>}
+                    {winner && (
+                        <h2>
+                            {winner === 'Draw' ? 'It\'s a draw!' : winner === playerId ? 'You won!' : 'You lost!'}
+                        </h2>
+                    )}
                 </div>
             ) : (
                 <div>

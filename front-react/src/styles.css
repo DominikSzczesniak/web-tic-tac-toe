@@ -122,3 +122,11 @@ body {
   text-align: center;
   font-size: 24px;
 }
+
+.winning-cell-green {
+  background-color: lightgreen;
+}
+
+.winning-cell-red {
+  background-color: lightcoral;
+}
