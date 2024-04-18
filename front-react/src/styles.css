@@ -64,8 +64,7 @@ body {
   font-weight: bold;
   line-height: 34px;
   height: 34px;
-  margin-right: -1px;
-  margin-top: -1px;
+  margin: 0 auto;
   padding: 0;
   text-align: center;
   width: 34px;
@@ -75,11 +74,16 @@ body {
   background: green;
 }
 
+.board-container {
+  text-align: center;
+}
+
 .board-row:after {
   clear: both;
   content: '';
   display: table;
 }
+
 .status {
   margin-bottom: 10px;
 }
@@ -113,20 +117,57 @@ body {
 
 .board {
   border-collapse: collapse;
+  display: inline-block;
+  background-color: #fff;
+  border: 2px solid #333;
 }
 
 .board td {
   width: 50px;
   height: 50px;
-  border: 1px solid #000;
+  border: 1px solid #aaa;
   text-align: center;
   font-size: 24px;
+  background-color: #ddd;
 }
 
-.winning-cell-green {
+.board-container .board .winning-cell-green {
   background-color: lightgreen;
 }
 
-.winning-cell-red {
+.board-container .board .winning-cell-red {
   background-color: lightcoral;
+}
+
+.hover-darken {
+  filter: brightness(80%);
+}
+
+.hover-darken:hover {
+  filter: brightness(100%);
+}
+
+.queue-window {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+}
+
+.queue-window.open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.queue-window-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-align: center;
 }

@@ -234,7 +234,7 @@ function Board({gameId, playerId}) {
     }, [gameId, isPlayerTurn]);
 
     return (
-        <div>
+        <div className="board-container">
             {boardView && (
                 <div>
                     <h2>Board View</h2>
@@ -247,6 +247,9 @@ function Board({gameId, playerId}) {
                                         key={columnIndex}
                                         onClick={() => makeMove(rowIndex, columnIndex)}
                                         className={winningCells && winningCells.some(([row, col]) => row === rowIndex && col === columnIndex) ? (playerId === winner ? 'winning-cell-green' : 'winning-cell-red') : ''}
+                                        style={{ filter: 'brightness(100%)', transition: 'filter 0.3s ease' }}
+                                        onMouseEnter={(e) => e.target.style.filter = 'brightness(80%)'}
+                                        onMouseLeave={(e) => e.target.style.filter = 'brightness(100%)'}
                                     >
                                         {cell === null ? '' : cell}
                                     </td>
