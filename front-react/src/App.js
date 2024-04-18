@@ -99,72 +99,16 @@ function GetGameForPlayer({playerId, onGameIdChange}) {
 
             return () => clearInterval(interval);
         }
-    }, [playerId, onGameIdChange]);
+    }, [playerId]);
 
     return null;
 }
 
-
-function Board({boardView, gameId, playerId, setPlayerToMove, winningCells, winner}) {
-
-    async function makeMove(rowIndex, columnIndex) {
-        try {
-            const response = await fetch(`http://localhost:8080/api/games/${gameId}/move`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    playerId: playerId,
-                    rowIndex: rowIndex,
-                    columnIndex: columnIndex,
-                }),
-            });
-            if (!response.ok) {
-                throw new Error('Error making move');
-            }
-            setPlayerToMove(false)
-        } catch (error) {
-            console.error('Error making move:', error);
-        }
-    }
-
-    return (
-        <div>
-            {boardView && (
-                <div>
-                    <h2>Board View</h2>
-                    <table className="board">
-                        <tbody>
-                        {boardView.map((row, rowIndex) => (
-                            <tr key={rowIndex}>
-                                {row.map((cell, columnIndex) => (
-                                    <td
-                                        key={columnIndex}
-                                        onClick={() => makeMove(rowIndex, columnIndex)}
-                                        className={winningCells && winningCells.some(([row, col]) => row === rowIndex && col === columnIndex) ? (playerId === winner ? 'winning-cell-green' : 'winning-cell-red') : ''}
-                                    >
-                                        {cell === null ? '' : cell}
-                                    </td>
-                                ))}
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-        </div>
-    );
-}
-
-function App() {
-    const [username, setUsername] = useState('');
-    const [playerId, setPlayerId] = useState('');
-    const [gameId, setGameId] = useState('');
-    const [boardView, setBoardView] = useState([]);
-    const [isPlayerTurn, setIsPlayerTurn] = useState(null);
+function Board({gameId, playerId}) {
     const [winner, setWinner] = useState(null);
     const [winningCells, setWinningCells] = useState(null);
+    const [isPlayerTurn, setIsPlayerTurn] = useState(null);
+    const [boardView, setBoardView] = useState([]);
 
     useEffect(() => {
         if (boardView.length > 0) {
@@ -220,7 +164,6 @@ function App() {
         }
     }
 
-
     useEffect(() => {
         if (gameId) {
             fetchPlayerToMove(gameId);
@@ -241,6 +184,28 @@ function App() {
             }
         } catch (error) {
             console.error('Error fetching player to move:', error);
+        }
+    }
+
+    async function makeMove(rowIndex, columnIndex) {
+        try {
+            const response = await fetch(`http://localhost:8080/api/games/${gameId}/move`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    playerId: playerId,
+                    rowIndex: rowIndex,
+                    columnIndex: columnIndex,
+                }),
+            });
+            if (!response.ok) {
+                throw new Error('Error making move');
+            }
+            setIsPlayerTurn(false)
+        } catch (error) {
+            console.error('Error making move:', error);
         }
     }
 
@@ -268,6 +233,47 @@ function App() {
         return () => clearInterval(intervalId);
     }, [gameId, isPlayerTurn]);
 
+    return (
+        <div>
+            {boardView && (
+                <div>
+                    <h2>Board View</h2>
+                    <table className="board">
+                        <tbody>
+                        {boardView.map((row, rowIndex) => (
+                            <tr key={rowIndex}>
+                                {row.map((cell, columnIndex) => (
+                                    <td
+                                        key={columnIndex}
+                                        onClick={() => makeMove(rowIndex, columnIndex)}
+                                        className={winningCells && winningCells.some(([row, col]) => row === rowIndex && col === columnIndex) ? (playerId === winner ? 'winning-cell-green' : 'winning-cell-red') : ''}
+                                    >
+                                        {cell === null ? '' : cell}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+            {(winner === null && !isDraw(boardView)) && (
+                <h2>{isPlayerTurn ? 'Your turn' : 'Opponent\'s turn'}</h2>
+            )}
+            {winner && (
+                <h2>
+                    {winner === 'Draw' ? 'It\'s a draw!' : winner === playerId ? 'You won!' : 'You lost!'}
+                </h2>
+            )}
+        </div>
+    );
+}
+
+function App() {
+    const [username, setUsername] = useState('');
+    const [playerId, setPlayerId] = useState('');
+    const [gameId, setGameId] = useState('');
+
     function handlePrepareGame(data) {
         setGameId(data);
     }
@@ -277,21 +283,9 @@ function App() {
             {gameId ? (
                 <div>
                     <Board
-                        boardView={boardView}
                         gameId={gameId}
                         playerId={playerId}
-                        setPlayerToMove={setIsPlayerTurn}
-                        winningCells={winningCells}
-                        winner={winner}
                     />
-                    {(winner === null && !isDraw(boardView)) && (
-                        <h2>{isPlayerTurn ? 'Your turn' : 'Opponent\'s turn'}</h2>
-                    )}
-                    {winner && (
-                        <h2>
-                            {winner === 'Draw' ? 'It\'s a draw!' : winner === playerId ? 'You won!' : 'You lost!'}
-                        </h2>
-                    )}
                 </div>
             ) : (
                 <div>
