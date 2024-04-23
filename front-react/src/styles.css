@@ -147,27 +147,41 @@ body {
   filter: brightness(100%);
 }
 
-.queue-window {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 9999;
-}
-
-.queue-window.open {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.queue-window-content {
-  background-color: #fff;
+.queue-message {
+  font-size: 20px;
+  font-weight: bold;
+  background-color: #f8f9fa;
+  border-radius: 10px;
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.queue-for-game-container input[type="text"] {
+  padding: 8px;
+  font-size: 16px;
+}
+
+.queue-for-game-container button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.close-game-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  align-items: end;
+}
+
+.game-container {
   text-align: center;
 }
