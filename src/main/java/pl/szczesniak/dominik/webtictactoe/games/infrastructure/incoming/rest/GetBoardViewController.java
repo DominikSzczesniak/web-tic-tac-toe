@@ -6,18 +6,18 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import pl.szczesniak.dominik.webtictactoe.games.domain.TicTacToeGamesService;
+import pl.szczesniak.dominik.webtictactoe.games.domain.GamesFacade;
 
 @RequiredArgsConstructor
 @RestController
 @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "http://localhost:3002"})
 public class GetBoardViewController {
 
-	private final TicTacToeGamesService ticTacToeGamesService;
+	private final GamesFacade gamesFacade;
 
 	@GetMapping("/api/games/{gameId}")
 	public ResponseEntity<Character[][]> getBoardView(@PathVariable final Long gameId) {
-		final Character[][] boardView = ticTacToeGamesService.getBoardView(gameId);
+		final Character[][] boardView = gamesFacade.getBoardView(gameId);
 		return ResponseEntity.status(200).body(boardView);
 	}
 

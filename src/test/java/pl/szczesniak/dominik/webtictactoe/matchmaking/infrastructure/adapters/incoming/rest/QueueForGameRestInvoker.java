@@ -1,27 +1,26 @@
-package pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest;
+package pl.szczesniak.dominik.webtictactoe.matchmaking.infrastructure.adapters.incoming.rest;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class PrepareGameControllerRestInvoker {
+public class QueueForGameRestInvoker {
 
-	private static final String URL = "/api/games";
+	private static final String URL = "/api/games/queue";
 
 	public final TestRestTemplate restTemplate;
 
-	public ResponseEntity<Long> prepareGame() {
-
+	public ResponseEntity<String> queueForGame(final String username) {
+		final String urlWithParam = URL + "?username=" + username;
 		return restTemplate.exchange(
-				URL,
+				urlWithParam,
 				HttpMethod.POST,
-				new HttpEntity<>(null),
-				Long.class
+				null,
+				String.class
 		);
 	}
 

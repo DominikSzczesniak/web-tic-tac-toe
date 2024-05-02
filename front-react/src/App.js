@@ -291,6 +291,7 @@ function CloseGameButton({ gameId, onCloseGame }) {
                 onCloseGame();
                 console.log('game closed, ', {gameId})
             } else {
+                onCloseGame();
                 throw new Error('Failed to close the game.');
             }
         } catch (error) {
