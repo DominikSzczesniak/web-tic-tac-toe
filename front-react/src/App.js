@@ -6,7 +6,7 @@ function QueueForGame({ username, setUsername, setPlayerId, gameId }) {
     async function queueForGame() {
         setInQueue(true);
         try {
-            const response = await fetch(`http://localhost:8080/api/games/queue?username=${encodeURIComponent(username)}`, {
+            const response = await fetch(`http://localhost:8080/api/queue?username=${encodeURIComponent(username)}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

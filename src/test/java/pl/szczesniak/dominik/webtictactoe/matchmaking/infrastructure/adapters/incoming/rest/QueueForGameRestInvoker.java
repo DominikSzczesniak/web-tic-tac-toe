@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class QueueForGameRestInvoker {
 
-	private static final String URL = "/api/games/queue";
+	private static final String URL = "/api/queue";
 
 	public final TestRestTemplate restTemplate;
 

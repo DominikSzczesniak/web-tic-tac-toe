@@ -16,7 +16,7 @@ public class QueueForGameController {
 
 	private final MatchmakingFacade matchmakingFacade;
 
-	@PostMapping("/api/games/queue")
+	@PostMapping("/api/queue")
 	public ResponseEntity<String> queueForGame(@RequestParam final String username) {
 		final UUID playerId = matchmakingFacade.queueToPlay(new PlayerName(username));
 		return ResponseEntity.status(201).body(playerId.toString());
