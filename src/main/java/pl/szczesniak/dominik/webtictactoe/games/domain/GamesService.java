@@ -9,6 +9,7 @@ import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.Player;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.PlayerMove;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.Symbol;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.model.exceptions.ObjectDoesNotExistException;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameInfo;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.CreateGame;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.MakeMove;
@@ -54,26 +55,39 @@ class GamesService {
 		return ticTacToeGame;
 	}
 
-	GameResult makeMove(final MakeMove command) {
+	GameInfo makeMove(final MakeMove command) {
 		final SingleGame singleGame = getGameInProgress(command.getGameId());
 		final TicTacToeGame ticTacToeGame = getTicTacToeGame(command.getGameId());
 
-		final GameResult gameResult = makePlayerMove(command.getPlayerId(), command.getPlayerMove(), singleGame, ticTacToeGame);
+		final GameInfo gameResult = makePlayerMove(command.getPlayerId(), command.getPlayerMove(), singleGame, ticTacToeGame);
 
 		gamesInProgress.put(command.getGameId(), singleGame);
 		ticTacToeGames.put(command.getGameId(), ticTacToeGame);
 		return gameResult;
 	}
 
-	private GameResult makePlayerMove(final UserId playerId, final PlayerMove playerMove,
-									  final SingleGame singleGame, final TicTacToeGame ticTacToeGame) {
+	private GameInfo makePlayerMove(final UserId playerId, final PlayerMove playerMove,
+									final SingleGame singleGame, final TicTacToeGame ticTacToeGame) {
 		final Player player = ticTacToeGame.getNextPlayerToMove();
-		if (convertToMyUserId(player.getPlayerID()).equals(playerId)) {
+		final UserId userId = convertToMyUserId(player.getPlayerID());
+		if (userId.equals(playerId)) {
 			final GameResult gameResult = singleGame.makeMove(player, playerMove);
+			final GameInfo gameInfo = toMyGameResult(userId, gameResult);
 			ticTacToeGame.setNextPlayerToMove();
-			return gameResult;
+			return gameInfo;
 		}
 		throw new OtherPlayerTurnException("Other player to move.");
+	}
+
+	private static GameInfo toMyGameResult(final UserId userId, final GameResult gameResult) {
+		try {
+			if (gameResult.getWhoWon() != null) {
+				return new GameInfo(gameResult.getGameStatus(), userId);
+			}
+		} catch (NullPointerException e) {
+			return new GameInfo(gameResult.getGameStatus(), null);
+		}
+		return null;
 	}
 
 	UserId getPlayerToMove(final TicTacToeGameId gameId) {
