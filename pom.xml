@@ -10,13 +10,31 @@
     </parent>
     <groupId>pl.szczesniak.dominik</groupId>
     <artifactId>web-tic-tac-toe</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
+
     <name>web-tic-tac-toe</name>
     <description>web-tic-tac-toe</description>
+
     <properties>
-        <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <tic-tac-toe-core.version>1.2.0</tic-tac-toe-core.version>
+        <lombok.version>1.18.26</lombok.version>
+
+        <commons-lang3.version>3.14.0</commons-lang3.version>
+        <assertj-core.version>3.24.2</assertj-core.version>
+        <junit-jupiter.version>5.9.2</junit-jupiter.version>
     </properties>
+
     <dependencies>
+
+        <dependency>
+            <groupId>pl.szczesniak.dominik.tictactoe</groupId>
+            <artifactId>tic-tac-toe-core</artifactId>
+            <version>${tic-tac-toe-core.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
@@ -24,9 +42,42 @@
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj-core.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
