@@ -1,4 +1,6 @@
 import {useEffect, useState} from 'react';
+// import Stomp from 'stompjs';
+// import SockJS from 'sockjs-client';
 
 function QueueForGame({ username, setUsername, setPlayerId, gameId }) {
     const [inQueue, setInQueue] = useState(false);
@@ -47,38 +49,6 @@ function QueueForGame({ username, setUsername, setPlayerId, gameId }) {
                     <button onClick={handleQueueClick}>Queue for Game</button>
                 </div>
             )}
-        </div>
-    );
-}
-
-function PrepareGame({handlePrepareGame}) {
-
-    async function prepareGame() {
-        try {
-            const response = await fetch('http://localhost:8080/api/games', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Error preparing game');
-            }
-
-            const data = await response.text();
-            console.log('Game prepared with ID:', data);
-            handlePrepareGame(data);
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    return (
-        <div className="prepare-game-container">
-            <div>
-                <button onClick={prepareGame}>Prepare Game</button>
-            </div>
         </div>
     );
 }
@@ -310,9 +280,44 @@ function App() {
     const [gameId, setGameId] = useState('');
     const [isGameFinished, setIsGameFinished] = useState(false);
 
-    function handlePrepareGame(data) {
-        setGameId(data);
-    }
+    // useEffect(() => {
+    //     const socket = new SockJS('http://localhost:8080/game'); // URL to your WebSocket endpoint
+    //     const stompClient = Stomp.over(socket);
+    //
+    //     stompClient.connect({}, () => {
+    //         console.log('Connected to WebSocket');
+    //         // Subscribe to a destination
+    //         stompClient.subscribe('/topic/move', (message) => {
+    //             console.log('Received message:', message.body);
+    //             // Handle incoming messages
+    //         });
+    //     });
+    //
+    //     return () => {
+    //         // Disconnect when component unmounts
+    //         stompClient.disconnect();
+    //     };
+    // }, []);
+
+    const WS_URL = 'ws://localhost:8080/websocket-server';
+    const websocket = new WebSocket(WS_URL);
+
+    websocket.onopen = function(event) {
+        console.log('WebSocket connection established.');
+    };
+
+    websocket.onmessage = function(event) {
+        const message = event.data;
+        console.log('Message received from server:', message);
+    };
+
+    websocket.onerror = function(error) {
+        console.error('WebSocket error:', error);
+    };
+
+    websocket.onclose = function(event) {
+        console.log('WebSocket connection closed:', event);
+    };
 
     function handleGameFinished() {
         setIsGameFinished(true);
@@ -349,10 +354,6 @@ function App() {
                         playerId={playerId}
                         setPlayerId={setPlayerId}
                         gameId={gameId}
-                    />
-                    <PrepareGame
-                        gameId={gameId}
-                        handlePrepareGame={handlePrepareGame}
                     />
                     <GetGameForPlayer
                         playerId={playerId}
