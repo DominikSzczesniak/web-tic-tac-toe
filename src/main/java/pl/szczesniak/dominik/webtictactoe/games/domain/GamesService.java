@@ -16,6 +16,7 @@ import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.MakeMove;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -44,7 +45,7 @@ class GamesService {
 
 	private TicTacToeGame createTicTacToeGame(final CreateGame command) {
 		final TicTacToeGame ticTacToeGame = new TicTacToeGame(
-				new TicTacToeGameId(id.getAndIncrement()),
+				new TicTacToeGameId(new Random().nextLong()),
 				new Player(new Symbol('O'), command.getPlayerOneName()),
 				new Player(new Symbol('X'), command.getPlayerTwoName())
 		);
