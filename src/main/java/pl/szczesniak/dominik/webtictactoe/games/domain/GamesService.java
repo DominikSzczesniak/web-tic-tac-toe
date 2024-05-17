@@ -19,7 +19,6 @@ import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
 import java.util.Optional;
 import java.util.Random;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Optional.ofNullable;
@@ -29,14 +28,14 @@ class GamesService {
 
 	private final ConcurrentHashMap<TicTacToeGameId, SingleGame> gamesInProgress = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<TicTacToeGameId, TicTacToeGame> ticTacToeGames = new ConcurrentHashMap<>();
-	private final ConcurrentHashMap<UUID, UserId> playerIds = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<UserId, Player> playerIds = new ConcurrentHashMap<>();
 	private final DomainEventsPublisher domainEventsPublisher;
 
 	TicTacToeGameId prepareGame(final CreateGame command) {
 		final TicTacToeGame ticTacToeGame = createTicTacToeGame(command);
 		final SingleGame game = new SingleGame(
-				ticTacToeGame.getPlayerOne(),
-				ticTacToeGame.getPlayerTwo(),
+				playerIds.get(ticTacToeGame.getPlayerOne()),
+				playerIds.get(ticTacToeGame.getPlayerTwo()),
 				3
 		);
 
@@ -47,11 +46,11 @@ class GamesService {
 	private TicTacToeGame createTicTacToeGame(final CreateGame command) {
 		final TicTacToeGame ticTacToeGame = new TicTacToeGame(
 				new TicTacToeGameId(new Random().nextLong(1, 10000000)),
-				new Player(new Symbol('O'), command.getPlayerOneName()),
-				new Player(new Symbol('X'), command.getPlayerTwoName())
+				command.getPlayerOne(),
+				command.getPlayerTwo()
 		);
-		playerIds.put(ticTacToeGame.getPlayerOne().getPlayerID(), command.getPlayerOne());
-		playerIds.put(ticTacToeGame.getPlayerTwo().getPlayerID(), command.getPlayerTwo());
+		playerIds.put(command.getPlayerOne(), new Player(new Symbol('O'), command.getPlayerOneName()));
+		playerIds.put(command.getPlayerTwo(), new Player(new Symbol('X'), command.getPlayerTwoName()));
 		ticTacToeGame.setNextPlayerToMove();
 		ticTacToeGames.put(ticTacToeGame.getGameId(), ticTacToeGame);
 		return ticTacToeGame;
@@ -71,11 +70,10 @@ class GamesService {
 
 	private GameInfo makePlayerMove(final UserId playerId, final PlayerMove playerMove,
 									final SingleGame singleGame, final TicTacToeGame ticTacToeGame) {
-		final Player player = ticTacToeGame.getNextPlayerToMove();
-		final UserId userId = convertToMyUserId(player.getPlayerID());
-		if (userId.equals(playerId)) {
-			final GameResult gameResult = singleGame.makeMove(player, playerMove);
-			final GameInfo gameInfo = toMyGameResult(userId, gameResult);
+		final UserId player = ticTacToeGame.getNextPlayerToMove();
+		if (playerId.equals(player)) {
+			final GameResult gameResult = singleGame.makeMove(playerIds.get(playerId), playerMove);
+			final GameInfo gameInfo = toMyGameResult(playerId, gameResult);
 			ticTacToeGame.setNextPlayerToMove();
 			return gameInfo;
 		}
@@ -95,7 +93,7 @@ class GamesService {
 
 	UserId getPlayerToMove(final TicTacToeGameId gameId) {
 		final TicTacToeGame ticTacToeGame = getTicTacToeGame(gameId);
-		return convertToMyUserId(ticTacToeGame.getNextPlayerToMove().getPlayerID());
+		return ticTacToeGame.getNextPlayerToMove();
 	}
 
 	Character[][] getBoardView(final Long gameId) {
@@ -105,8 +103,8 @@ class GamesService {
 
 	void closeGame(final TicTacToeGameId ticTacToeGameId) {
 		final TicTacToeGame ticTacToeGame = getTicTacToeGame(ticTacToeGameId);
-		playerIds.remove(ticTacToeGame.getPlayerOne().getPlayerID());
-		playerIds.remove(ticTacToeGame.getPlayerTwo().getPlayerID());
+		playerIds.remove(ticTacToeGame.getPlayerOne());
+		playerIds.remove(ticTacToeGame.getPlayerTwo());
 		gamesInProgress.remove(ticTacToeGameId);
 		ticTacToeGames.remove(ticTacToeGameId);
 	}
@@ -124,14 +122,10 @@ class GamesService {
 	TicTacToeGameId getGameForPlayer(final UserId playerId) {
 		final Optional<TicTacToeGame> game = ticTacToeGames.values().stream()
 				.filter(ticTacToeGame ->
-						convertToMyUserId(ticTacToeGame.getPlayerOne().getPlayerID()).equals(playerId)
-								|| convertToMyUserId(ticTacToeGame.getPlayerTwo().getPlayerID()).equals(playerId))
+						ticTacToeGame.getPlayerOne().equals(playerId)
+								|| ticTacToeGame.getPlayerTwo().equals(playerId))
 				.findFirst();
 		return game.orElseThrow(() -> new ObjectDoesNotExistException("Game for player=" + playerId + " does not exist")).getGameId();
-	}
-
-	private UserId convertToMyUserId(final UUID playerId) {
-		return playerIds.get(playerId);
 	}
 
 }
