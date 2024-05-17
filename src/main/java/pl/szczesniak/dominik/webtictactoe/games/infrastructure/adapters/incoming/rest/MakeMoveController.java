@@ -1,4 +1,4 @@
-package pl.szczesniak.dominik.webtictactoe.games.infrastructure.incoming.rest;
+package pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,9 @@ public class MakeMoveController {
 					new UserId(UUID.fromString(makeMoveDto.getPlayerId())),
 					new PlayerMove(makeMoveDto.getRowIndex(), makeMoveDto.getColumnIndex()))
 			);
+
 			final GameResultDto gameResultDto = toDto(gameResult);
+
 			return ResponseEntity.status(201).body(gameResultDto);
 		} catch (IllegalArgumentException e) {
 			return ResponseEntity.status(400).body(e.getMessage());
@@ -48,7 +50,7 @@ public class MakeMoveController {
 	}
 
 	@Data
-	private static class MakeMoveDto {
+	static class MakeMoveDto {
 		private final String playerId;
 		private final Integer rowIndex;
 		private final Integer columnIndex;

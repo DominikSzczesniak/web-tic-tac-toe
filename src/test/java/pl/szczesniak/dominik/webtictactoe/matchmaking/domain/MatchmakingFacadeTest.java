@@ -40,7 +40,7 @@ class MatchmakingFacadeTest {
 		tut.queueToPlay(createAnyPlayerName());
 
 		// then
-		final List<PlayersMatched> publishedEvents = eventPublisher.getPublishedEvents();
+		final List<DomainEvent> publishedEvents = eventPublisher.getPublishedEvents();
 		assertThat(publishedEvents).hasSize(0);
 	}
 

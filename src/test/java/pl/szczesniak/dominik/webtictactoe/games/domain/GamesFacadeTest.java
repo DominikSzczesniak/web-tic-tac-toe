@@ -3,10 +3,13 @@ package pl.szczesniak.dominik.webtictactoe.games.domain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.exceptions.OtherPlayerTurnException;
+import pl.szczesniak.dominik.webtictactoe.commons.domain.DomainEvent;
+import pl.szczesniak.dominik.webtictactoe.commons.domain.InMemoryEventPublisher;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.model.exceptions.ObjectDoesNotExistException;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.CreateGameSample;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.MakeMoveSample;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.events.MoveMade;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,10 +20,12 @@ import static pl.szczesniak.dominik.webtictactoe.games.domain.model.PlayerIdSamp
 class GamesFacadeTest {
 
 	private GamesFacade tut;
+	private InMemoryEventPublisher eventPublisher;
 
 	@BeforeEach
 	void setUp() {
-		tut = gamesFacade();
+		eventPublisher = new InMemoryEventPublisher();
+		tut = gamesFacade(eventPublisher);
 	}
 
 	@Test
@@ -111,23 +116,6 @@ class GamesFacadeTest {
 	}
 
 	@Test
-	void game_should_be_ready_for_players() {
-		// given
-		final UserId playerOne = createAnyPlayerId();
-		final UserId playerTwo = createAnyPlayerId();
-
-		final TicTacToeGameId ticTacToeGame = tut.createGame(CreateGameSample.builder().playerOne(playerOne).playerTwo(playerTwo).build());
-
-		// when
-		final TicTacToeGameId gameReadyForPlayerOne = tut.getGameForPlayer(playerOne);
-		final TicTacToeGameId gameReadyForPlayerTwo = tut.getGameForPlayer(playerTwo);
-
-		// then
-		assertThat(ticTacToeGame).isEqualTo(gameReadyForPlayerOne);
-		assertThat(ticTacToeGame).isEqualTo(gameReadyForPlayerTwo);
-	}
-
-	@Test
 	void should_throw_exception_when_game_not_ready_for_player() {
 		// given
 		final UserId player = createAnyPlayerId();
@@ -137,6 +125,22 @@ class GamesFacadeTest {
 
 		// then
 		assertThat(thrown).isInstanceOf(ObjectDoesNotExistException.class);
+	}
+
+	@Test
+	void should_publish_event_when_player_makes_move() {
+		// given
+		final UserId playerOne = createAnyPlayerId();
+		final UserId playerTwo = createAnyPlayerId();
+
+		final TicTacToeGameId ticTacToeGame = tut.createGame(CreateGameSample.builder().playerOne(playerOne).playerTwo(playerTwo).build());
+
+		// when
+		tut.makeMove(MakeMoveSample.builder().playerId(playerOne).ticTacToeGameId(ticTacToeGame).build());
+
+		// then
+		final DomainEvent publishedEvent = eventPublisher.getPublishedEvents().get(0);
+		assertThat(publishedEvent.getClass()).isEqualTo(MoveMade.class);
 	}
 
 }

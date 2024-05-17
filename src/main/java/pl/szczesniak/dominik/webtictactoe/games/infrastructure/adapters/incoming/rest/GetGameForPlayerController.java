@@ -1,4 +1,4 @@
-package pl.szczesniak.dominik.webtictactoe.games.infrastructure.incoming.rest;
+package pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest;
 
 
 import lombok.RequiredArgsConstructor;

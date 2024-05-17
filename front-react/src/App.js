@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 
-function QueueForGame({ username, setUsername, setPlayerId, gameId }) {
+function QueueForGame({username, setUsername, setPlayerId, gameId}) {
     const [inQueue, setInQueue] = useState(false);
 
     async function queueForGame() {
@@ -42,43 +42,11 @@ function QueueForGame({ username, setUsername, setPlayerId, gameId }) {
             ) : (
                 <div>
                     <label>
-                        <input type="text" placeholder="username" value={username} onChange={handleUsernameChange} />
+                        <input type="text" placeholder="username" value={username} onChange={handleUsernameChange}/>
                     </label>
                     <button onClick={handleQueueClick}>Queue for Game</button>
                 </div>
             )}
-        </div>
-    );
-}
-
-function PrepareGame({handlePrepareGame}) {
-
-    async function prepareGame() {
-        try {
-            const response = await fetch('http://localhost:8080/api/games', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Error preparing game');
-            }
-
-            const data = await response.text();
-            console.log('Game prepared with ID:', data);
-            handlePrepareGame(data);
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    return (
-        <div className="prepare-game-container">
-            <div>
-                <button onClick={prepareGame}>Prepare Game</button>
-            </div>
         </div>
     );
 }
@@ -116,6 +84,44 @@ function Board({gameId, playerId, onGameFinish}) {
     const [winningCells, setWinningCells] = useState(null);
     const [isPlayerTurn, setIsPlayerTurn] = useState(null);
     const [boardView, setBoardView] = useState([]);
+
+    useEffect(() => {
+        const eventSource = new EventSource(`http://localhost:8080/api/subscribe/games/${gameId}`);
+
+        eventSource.onopen = (event) => {
+            console.log('Connection opened', event);
+        };
+
+        eventSource.onmessage = (event) => {
+            console.log('New message', event.data);
+        };
+
+        eventSource.addEventListener('moveMade', (event) => {
+            console.log('Move made');
+            if (event && event.data) {
+                const eventData = JSON.parse(event.data);
+                if (eventData && eventData.id) {
+                    if (eventData.id === playerId) {
+                        setWinner(playerId)
+                    } else {
+                        setWinner("Opponent")
+                    }
+                }
+            }
+            fetchBoardView(gameId);
+        });
+
+        eventSource.onerror = (event) => {
+            console.error('Error occurred', event);
+            if (eventSource.readyState === EventSource.CLOSED) {
+                console.log('Connection closed');
+            }
+        };
+
+        return () => {
+            eventSource.close();
+        };
+    }, [gameId]);
 
     useEffect(() => {
         if (boardView.length > 0) {
@@ -161,14 +167,11 @@ function Board({gameId, playerId, onGameFinish}) {
         return true;
     }
 
-    function checkGameStatus(board, intervalId) {
+    function checkGameStatus(board) {
         if (isWinningMove(board)) {
-            setWinner(isPlayerTurn ? 'Opponent' : playerId);
-            clearInterval(intervalId)
             onGameFinish();
         } else if (isDraw(board)) {
             setWinner('Draw');
-            clearInterval(intervalId)
             onGameFinish();
         }
     }
@@ -218,29 +221,24 @@ function Board({gameId, playerId, onGameFinish}) {
         }
     }
 
-    useEffect(() => {
-        let intervalId;
-        if (gameId) {
-            const fetchBoardView = async () => {
-                try {
-                    const response = await fetch(`http://localhost:8080/api/games/${gameId}`);
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    const data = await response.json();
-                    setBoardView(data);
-                    console.log("updated board ", data);
-                    checkGameStatus(data, intervalId);
-                } catch (error) {
-                    console.error('Error fetching board view:', error);
-                }
-            };
-
-            fetchBoardView();
-            intervalId = setInterval(fetchBoardView, 2000);
+    async function fetchBoardView(gameId) {
+        try {
+            const response = await fetch(`http://localhost:8080/api/games/${gameId}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            setBoardView(data);
+            console.log("updated board ", data);
+            checkGameStatus(data);
+        } catch (error) {
+            console.error('Error fetching board view:', error);
         }
-        return () => clearInterval(intervalId);
-    }, [gameId, isPlayerTurn]);
+    }
+
+    useEffect(() => {
+        fetchBoardView(gameId)
+    }, [gameId]);
 
     return (
         <div className="board-container">
@@ -256,7 +254,7 @@ function Board({gameId, playerId, onGameFinish}) {
                                         key={columnIndex}
                                         onClick={() => makeMove(rowIndex, columnIndex)}
                                         className={winningCells && winningCells.some(([row, col]) => row === rowIndex && col === columnIndex) ? (playerId === winner ? 'winning-cell-green' : 'winning-cell-red') : ''}
-                                        style={{ filter: 'brightness(100%)', transition: 'filter 0.3s ease' }}
+                                        style={{filter: 'brightness(100%)', transition: 'filter 0.3s ease'}}
                                         onMouseEnter={(e) => e.target.style.filter = 'brightness(80%)'}
                                         onMouseLeave={(e) => e.target.style.filter = 'brightness(100%)'}
                                     >
@@ -281,7 +279,7 @@ function Board({gameId, playerId, onGameFinish}) {
     );
 }
 
-function CloseGameButton({ gameId, onCloseGame }) {
+function CloseGameButton({gameId, onCloseGame}) {
     const handleClick = async () => {
         try {
             const response = await fetch(`http://localhost:8080/api/games/${gameId}`, {
@@ -310,10 +308,6 @@ function App() {
     const [gameId, setGameId] = useState('');
     const [isGameFinished, setIsGameFinished] = useState(false);
 
-    function handlePrepareGame(data) {
-        setGameId(data);
-    }
-
     function handleGameFinished() {
         setIsGameFinished(true);
     }
@@ -336,7 +330,7 @@ function App() {
                         onGameFinish={handleGameFinished}
                     />
                     {isGameFinished ? (
-                        <CloseGameButton gameId={gameId} onCloseGame={handleCloseGame} />
+                        <CloseGameButton gameId={gameId} onCloseGame={handleCloseGame}/>
                     ) : (
                         <h2></h2>
                     )}
@@ -349,10 +343,6 @@ function App() {
                         playerId={playerId}
                         setPlayerId={setPlayerId}
                         gameId={gameId}
-                    />
-                    <PrepareGame
-                        gameId={gameId}
-                        handlePrepareGame={handlePrepareGame}
                     />
                     <GetGameForPlayer
                         playerId={playerId}

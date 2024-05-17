@@ -1,4 +1,4 @@
-package pl.szczesniak.dominik.webtictactoe.matchmaking.infrastructure.incoming.rest;
+package pl.szczesniak.dominik.webtictactoe.matchmaking.infrastructure.adapters.incoming.rest;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

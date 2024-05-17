@@ -1,4 +1,4 @@
-package pl.szczesniak.dominik.webtictactoe.games.infrastructure.incoming.listeners;
+package pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.listeners;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
