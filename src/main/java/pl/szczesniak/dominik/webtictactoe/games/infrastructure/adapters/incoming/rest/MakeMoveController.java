@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.PlayerMove;
 import pl.szczesniak.dominik.webtictactoe.games.domain.GamesFacade;
-import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameInfo;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameStatusInfo;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.MakeMove;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
@@ -26,7 +26,7 @@ public class MakeMoveController {
 	@PostMapping("/api/games/{gameId}/move")
 	public ResponseEntity<?> makeMove(@PathVariable final Long gameId, @RequestBody final MakeMoveDto makeMoveDto) {
 		try {
-			final GameInfo gameResult = gamesFacade.makeMove(new MakeMove(
+			final GameStatusInfo gameResult = gamesFacade.makeMove(new MakeMove(
 					new TicTacToeGameId(gameId),
 					new UserId(UUID.fromString(makeMoveDto.getPlayerId())),
 					new PlayerMove(makeMoveDto.getRowIndex(), makeMoveDto.getColumnIndex()))
@@ -42,7 +42,7 @@ public class MakeMoveController {
 		}
 	}
 
-	private static GameResultDto toDto(final GameInfo gameResult) {
+	private static GameResultDto toDto(final GameStatusInfo gameResult) {
 		final String winnerId = gameResult.getWhoWon()
 				.map(player -> player.getId().toString())
 				.orElse(null);

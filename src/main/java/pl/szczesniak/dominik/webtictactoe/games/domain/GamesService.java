@@ -10,7 +10,7 @@ import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.PlayerMove;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.Symbol;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.DomainEventsPublisher;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.model.exceptions.ObjectDoesNotExistException;
-import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameInfo;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameStatusInfo;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.CreateGame;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.MakeMove;
@@ -57,38 +57,38 @@ class GamesService {
 		return ticTacToeGame;
 	}
 
-	GameInfo makeMove(final MakeMove command) {
+	GameStatusInfo makeMove(final MakeMove command) {
 		final SingleGame singleGame = getGameInProgress(command.getGameId());
 		final TicTacToeGame ticTacToeGame = getTicTacToeGame(command.getGameId());
 
-		final GameInfo gameResult = makePlayerMove(command.getPlayerId(), command.getPlayerMove(), singleGame, ticTacToeGame);
+		final GameStatusInfo gameStatusInfo = makePlayerMove(command.getPlayerId(), command.getPlayerMove(), singleGame, ticTacToeGame);
 
 		gamesInProgress.put(command.getGameId(), singleGame);
 		ticTacToeGames.put(command.getGameId(), ticTacToeGame);
-		domainEventsPublisher.publish(new MoveMade(command.getGameId().getValue(), gameResult));
-		return gameResult;
+		domainEventsPublisher.publish(new MoveMade(command.getGameId().getValue(), gameStatusInfo));
+		return gameStatusInfo;
 	}
 
-	private GameInfo makePlayerMove(final UserId playerId, final PlayerMove playerMove,
-									final SingleGame singleGame, final TicTacToeGame ticTacToeGame) {
+	private GameStatusInfo makePlayerMove(final UserId playerId, final PlayerMove playerMove,
+										  final SingleGame singleGame, final TicTacToeGame ticTacToeGame) {
 		final Player player = ticTacToeGame.getNextPlayerToMove();
 		final UserId userId = convertToMyUserId(player.getPlayerID());
 		if (userId.equals(playerId)) {
 			final GameResult gameResult = singleGame.makeMove(player, playerMove);
-			final GameInfo gameInfo = toMyGameResult(userId, gameResult);
+			final GameStatusInfo gameStatusInfo = toGameStatusInfo(userId, gameResult);
 			ticTacToeGame.setNextPlayerToMove();
-			return gameInfo;
+			return gameStatusInfo;
 		}
 		throw new OtherPlayerTurnException("Other player to move.");
 	}
 
-	private static GameInfo toMyGameResult(final UserId userId, final GameResult gameResult) {
+	private static GameStatusInfo toGameStatusInfo(final UserId userId, final GameResult gameResult) {
 		try {
 			if (gameResult.getWhoWon() != null) {
-				return new GameInfo(gameResult.getGameStatus(), userId);
+				return new GameStatusInfo(gameResult.getGameStatus(), userId);
 			}
 		} catch (NullPointerException e) {
-			return new GameInfo(gameResult.getGameStatus(), null);
+			return new GameStatusInfo(gameResult.getGameStatus(), null);
 		}
 		return null;
 	}

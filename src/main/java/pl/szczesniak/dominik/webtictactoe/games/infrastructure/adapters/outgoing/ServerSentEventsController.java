@@ -24,13 +24,12 @@ public class ServerSentEventsController {
 
 		emitter.onCompletion(() -> removeEmitter(gameId, emitter));
 		emitter.onTimeout(() -> removeEmitter(gameId, emitter));
-		emitter.onError((e) -> removeEmitter(gameId, emitter));
 
 		return emitter;
 	}
 
 	private void removeEmitter(final Long gameId, final SseEmitter emitter) {
-		final List<SseEmitter> gameEmitters = getEmitters(gameId);
+		final List<SseEmitter> gameEmitters = emitters.getOrDefault(gameId, new ArrayList<>());
 		if (!gameEmitters.isEmpty()) {
 			gameEmitters.remove(emitter);
 			if (gameEmitters.isEmpty()) {
@@ -40,18 +39,14 @@ public class ServerSentEventsController {
 	}
 
 	public void handleMoveMadeEvent(final MoveMade event) {
-		final List<SseEmitter> emitters = getEmitters(event.getGameId());
-		for (SseEmitter emitter : emitters) {
+		final List<SseEmitter> gameEmitters = emitters.getOrDefault(event.getGameId(), new ArrayList<>());
+		gameEmitters.forEach(emitter -> {
 			try {
-				emitter.send(SseEmitter.event().name("moveMade").data(event.getGameInfo().getWhoWon()));
+				emitter.send(SseEmitter.event().name("moveMade").data(event.getGameStatusInfo().getWhoWon()));
 			} catch (IOException e) {
 				emitter.completeWithError(e);
 			}
-		}
-	}
-
-	private List<SseEmitter> getEmitters(final Long gameId) {
-		return emitters.getOrDefault(gameId, new ArrayList<>());
+		});
 	}
 
 }

@@ -11,7 +11,7 @@ import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 
 @RequiredArgsConstructor
 @RestController
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "http://localhost:3002"})
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "http://localhost:3002"}) // todo: webconfig does not work
 public class CloseGameController {
 
 	private final GamesFacade gamesFacade;

@@ -29,7 +29,7 @@ class GamesFacadeTest {
 	}
 
 	@Test
-	void both_queued_players_should_be_in_same_game() {
+	void players_should_be_in_same_game() {
 		// given
 		final UserId playerOne = createAnyPlayerId();
 		final UserId playerTwo = createAnyPlayerId();
@@ -46,7 +46,7 @@ class GamesFacadeTest {
 	}
 
 	@Test
-	void first_player_should_be_first_to_move() {
+	void first_player_that_queues_should_be_first_to_move() {
 		// given
 		final UserId playerOne = createAnyPlayerId();
 		final UserId playerTwo = createAnyPlayerId();

@@ -14,13 +14,13 @@ import static java.util.Optional.ofNullable;
 @Getter
 @ToString
 @EqualsAndHashCode
-public class GameInfo {
+public class GameStatusInfo {
 
 	@NonNull
 	private final GameStatus gameStatus;
 	private final UserId whoWon;
 
-	public GameInfo(@NonNull final GameStatus gameStatus, final UserId whoWon) {
+	public GameStatusInfo(@NonNull final GameStatus gameStatus, final UserId whoWon) {
 		this.gameStatus = gameStatus;
 		this.whoWon = whoWon;
 	}
