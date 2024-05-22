@@ -20,7 +20,7 @@ class MatchmakingService {
 	private final Queue<PlayerInQueue> playersInQueue = new LinkedList<>();
 
 	UserId addPlayerToQueue(final PlayerName playerName) {
-		final UserId queuedPlayer = new UserId(UUID.randomUUID());
+		final UserId queuedPlayer = new UserId(UUID.randomUUID().toString());
 		playersInQueue.add(new PlayerInQueue(queuedPlayer, playerName));
 
 		tryMatchPlayersForGame();
