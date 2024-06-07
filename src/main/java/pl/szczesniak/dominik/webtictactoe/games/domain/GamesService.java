@@ -7,6 +7,7 @@ import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.exceptions.OtherPl
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.GameResult;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.Player;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.PlayerMove;
+import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.PlayerName;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.Symbol;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.DomainEventsPublisher;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.model.exceptions.ObjectDoesNotExistException;
@@ -49,8 +50,8 @@ class GamesService {
 				command.getPlayerOne(),
 				command.getPlayerTwo()
 		);
-		playerIds.put(command.getPlayerOne(), new Player(new Symbol('O'), command.getPlayerOneName()));
-		playerIds.put(command.getPlayerTwo(), new Player(new Symbol('X'), command.getPlayerTwoName()));
+		playerIds.put(command.getPlayerOne(), new Player(new Symbol('O'), new PlayerName("asd")));
+		playerIds.put(command.getPlayerTwo(), new Player(new Symbol('X'), new PlayerName("qwe")));
 		ticTacToeGame.setNextPlayerToMove();
 		ticTacToeGames.put(ticTacToeGame.getGameId(), ticTacToeGame);
 		return ticTacToeGame;

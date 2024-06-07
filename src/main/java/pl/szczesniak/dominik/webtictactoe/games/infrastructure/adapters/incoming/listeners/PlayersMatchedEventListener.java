@@ -15,7 +15,7 @@ class PlayersMatchedEventListener {
 
 	@EventListener(PlayersMatched.class)
 	public void handlePlayersMatchedEvent(final PlayersMatched event) {
-		gamesFacade.createGame(new CreateGame(event.getPlayerOne(), event.getPlayerOneName(), event.getPlayerTwo(), event.getPlayerTwoName()));
+		gamesFacade.createGame(new CreateGame(event.getPlayerOne(), event.getPlayerTwo()));
 	}
 
 }

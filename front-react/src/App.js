@@ -6,7 +6,7 @@ function QueueForGame({username, setUsername, setPlayerId, gameId}) {
     async function queueForGame() {
         setInQueue(true);
         try {
-            const response = await fetch(`http://localhost:8080/api/queue?username=${encodeURIComponent(username)}`, {
+            const response = await fetch(`http://localhost:8080/api/queue?userId=${encodeURIComponent(username)}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -18,7 +18,7 @@ function QueueForGame({username, setUsername, setPlayerId, gameId}) {
             }
 
             const data = await response.text();
-            setPlayerId(data);
+            setPlayerId(username);
             console.log('Player queued successfully with playerId:', data);
         } catch (error) {
             console.error(error);

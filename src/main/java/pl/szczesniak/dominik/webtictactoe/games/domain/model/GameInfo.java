@@ -17,7 +17,7 @@ import static java.util.Optional.ofNullable;
 public class GameInfo {
 
 	@NonNull
-	private final GameStatus gameStatus;
+	private final GameStatus gameStatus; // todo
 	private final UserId whoWon;
 
 	public GameInfo(@NonNull final GameStatus gameStatus, final UserId whoWon) {
