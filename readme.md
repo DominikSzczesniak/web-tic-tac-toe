@@ -24,6 +24,13 @@ Library part of TicTacToe can be found here: https://github.com/DominikSzczesnia
 - closing the game
 
 
-## Illustration
-![img.png](img.png)
+# Illustration
+## Before the game
+![img_6.png](img_6.png)
 ![img_1.png](img_1.png)
+
+## During the game
+![img_2.png](img_2.png)
+![img_3.png](img_3.png)
+![img_4.png](img_4.png)
+![img_5.png](img_5.png)
