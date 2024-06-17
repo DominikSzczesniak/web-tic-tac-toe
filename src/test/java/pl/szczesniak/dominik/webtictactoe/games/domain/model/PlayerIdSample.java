@@ -7,7 +7,7 @@ import java.util.UUID;
 public class PlayerIdSample {
 
 	public static UserId createAnyPlayerId() {
-		return new UserId(UUID.randomUUID());
+		return new UserId(UUID.randomUUID().toString());
 	}
 
 }

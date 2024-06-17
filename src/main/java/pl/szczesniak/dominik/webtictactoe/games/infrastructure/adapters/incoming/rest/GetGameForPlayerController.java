@@ -1,4 +1,4 @@
-package pl.szczesniak.dominik.webtictactoe.games.infrastructure.incoming.rest;
+package pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest;
 
 
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class GetGameForPlayerController {
 	@GetMapping("/api/games")
 	public ResponseEntity<Long> getGameForPlayer(@RequestParam final String playerId) {
 		try {
-			final TicTacToeGameId gameReadyForPlayer = gamesFacade.getGameForPlayer(new UserId(UUID.fromString(playerId)));
+			final TicTacToeGameId gameReadyForPlayer = gamesFacade.getGameForPlayer(new UserId(playerId));
 			return ResponseEntity.status(200).body(gameReadyForPlayer.getValue());
 		} catch (IllegalArgumentException | NullPointerException e) {
 			return ResponseEntity.status(400).body(null);

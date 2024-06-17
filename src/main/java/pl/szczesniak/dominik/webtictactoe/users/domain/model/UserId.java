@@ -8,6 +8,6 @@ import java.util.UUID;
 @Value
 public class UserId {
 
-	@NonNull UUID id;
+	@NonNull String id;
 
 }

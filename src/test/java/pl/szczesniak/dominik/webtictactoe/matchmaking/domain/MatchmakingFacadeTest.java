@@ -9,7 +9,7 @@ import pl.szczesniak.dominik.webtictactoe.matchmaking.domain.model.events.Player
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.szczesniak.dominik.webtictactoe.games.domain.model.PlayerNameSample.createAnyPlayerName;
+import static pl.szczesniak.dominik.webtictactoe.games.domain.model.PlayerIdSample.createAnyPlayerId;
 import static pl.szczesniak.dominik.webtictactoe.matchmaking.domain.TestMatchmakingFacadeConfiguration.matchmakingFacade;
 
 class MatchmakingFacadeTest {
@@ -26,8 +26,8 @@ class MatchmakingFacadeTest {
 	@Test
 	void event_should_be_published_when_two_users_queued() {
 		// when
-		tut.queueToPlay(createAnyPlayerName());
-		tut.queueToPlay(createAnyPlayerName());
+		tut.queueToPlay(createAnyPlayerId());
+		tut.queueToPlay(createAnyPlayerId());
 
 		// then
 		final DomainEvent publishedEvent = eventPublisher.getPublishedEvents().get(0);
@@ -37,10 +37,10 @@ class MatchmakingFacadeTest {
 	@Test
 	void should_not_publish_event_when_only_one_user_queued() {
 		// when
-		tut.queueToPlay(createAnyPlayerName());
+		tut.queueToPlay(createAnyPlayerId());
 
 		// then
-		final List<PlayersMatched> publishedEvents = eventPublisher.getPublishedEvents();
+		final List<DomainEvent> publishedEvents = eventPublisher.getPublishedEvents();
 		assertThat(publishedEvents).hasSize(0);
 	}
 
