@@ -18,7 +18,7 @@ public class GetWhichPlayerToMoveController {
 	@GetMapping("/api/games/{gameId}/move")
 	public ResponseEntity<String> getWhichPlayerToMove(@PathVariable final Long gameId) {
 		final UserId playerToMove = gamesFacade.getPlayerToMove(new TicTacToeGameId(gameId));
-		return ResponseEntity.status(200).body(playerToMove.getId().toString());
+		return ResponseEntity.status(200).body(playerToMove.getValue().toString());
 	}
 
 }

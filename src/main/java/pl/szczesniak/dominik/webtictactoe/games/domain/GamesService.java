@@ -29,7 +29,8 @@ import static java.util.Optional.ofNullable;
 class GamesService {
 
 	private final ConcurrentHashMap<TicTacToeGameId, SingleGame> gamesInProgress = new ConcurrentHashMap<>();
-	private final ConcurrentHashMap<TicTacToeGameId, TicTacToeGame> ticTacToeGames = new ConcurrentHashMap<>();
+//	private final ConcurrentHashMap<TicTacToeGameId, TicTacToeGame> ticTacToeGames = new ConcurrentHashMap<>();
+	private final TicTacToeGamesRepository ticTacToeGamesRepository;
 	private final ConcurrentHashMap<UserId, Player> userIdToLibraryPlayer = new ConcurrentHashMap<>();
 	private final DomainEventsPublisher domainEventsPublisher;
 
@@ -54,7 +55,8 @@ class GamesService {
 		userIdToLibraryPlayer.put(command.getPlayerOne(), new Player(new Symbol('O'), new PlayerName("asd")));
 		userIdToLibraryPlayer.put(command.getPlayerTwo(), new Player(new Symbol('X'), new PlayerName("qwe")));
 		ticTacToeGame.setNextPlayerToMove();
-		ticTacToeGames.put(ticTacToeGame.getGameId(), ticTacToeGame);
+//		ticTacToeGames.put(ticTacToeGame.getGameId(), ticTacToeGame);
+		ticTacToeGamesRepository.create(ticTacToeGame);
 		return ticTacToeGame;
 	}
 
@@ -65,7 +67,8 @@ class GamesService {
 		final GameInfo gameResult = makePlayerMove(command.getPlayerId(), command.getPlayerMove(), singleGame, ticTacToeGame);
 
 		gamesInProgress.put(command.getGameId(), singleGame);
-		ticTacToeGames.put(command.getGameId(), ticTacToeGame);
+//		ticTacToeGames.put(command.getGameId(), ticTacToeGame);
+		ticTacToeGamesRepository.update(ticTacToeGame);
 		domainEventsPublisher.publish(new MoveMade(command.getGameId().getValue(), gameResult));
 		return gameResult;
 	}
@@ -108,7 +111,8 @@ class GamesService {
 		userIdToLibraryPlayer.remove(ticTacToeGame.getPlayerOne());
 		userIdToLibraryPlayer.remove(ticTacToeGame.getPlayerTwo());
 		gamesInProgress.remove(ticTacToeGameId);
-		ticTacToeGames.remove(ticTacToeGameId);
+//		ticTacToeGames.remove(ticTacToeGameId);
+		ticTacToeGamesRepository.remove(ticTacToeGameId);
 	}
 
 	private SingleGame getGameInProgress(final TicTacToeGameId gameId) {
@@ -117,17 +121,19 @@ class GamesService {
 	}
 
 	private TicTacToeGame getTicTacToeGame(final TicTacToeGameId gameId) {
-		return ofNullable(ticTacToeGames.get(gameId)).orElseThrow(
-				() -> new ObjectDoesNotExistException("Game with gameId=" + gameId + " does not exist"));
+//		return ofNullable(ticTacToeGames.get(gameId)).orElseThrow(
+//				() -> new ObjectDoesNotExistException("Game with gameId=" + gameId + " does not exist"));
+		return ticTacToeGamesRepository.getGame(gameId);
 	}
 
 	TicTacToeGameId getGameForPlayer(final UserId playerId) {
-		final Optional<TicTacToeGame> game = ticTacToeGames.values().stream()
-				.filter(ticTacToeGame ->
-						ticTacToeGame.getPlayerOne().equals(playerId)
-								|| ticTacToeGame.getPlayerTwo().equals(playerId))
-				.findFirst();
-		return game.orElseThrow(() -> new ObjectDoesNotExistException("Game for player=" + playerId + " does not exist")).getGameId();
+//		final Optional<TicTacToeGame> game = ticTacToeGames.values().stream()
+//				.filter(ticTacToeGame ->
+//						ticTacToeGame.getPlayerOne().equals(playerId)
+//								|| ticTacToeGame.getPlayerTwo().equals(playerId))
+//				.findFirst();
+//		return game.orElseThrow(() -> new ObjectDoesNotExistException("Game for player=" + playerId + " does not exist")).getGameId();
+		return ticTacToeGamesRepository.getGameForPlayer(playerId);
 	}
 
 }

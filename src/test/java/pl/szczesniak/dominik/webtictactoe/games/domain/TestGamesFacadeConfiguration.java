@@ -5,7 +5,7 @@ import pl.szczesniak.dominik.webtictactoe.commons.domain.DomainEventsPublisher;
 class TestGamesFacadeConfiguration {
 
 	static GamesFacade gamesFacade(final DomainEventsPublisher publisher) {
-		return new GamesFacade(new GamesService(publisher));
+		return new GamesFacade(new GamesService(new InMemoryTicTacToeGamesRepository(), publisher));
 	}
 
 }

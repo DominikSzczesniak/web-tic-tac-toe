@@ -15,8 +15,6 @@ import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.MakeMove;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
-import java.util.UUID;
-
 @RequiredArgsConstructor
 @RestController
 public class MakeMoveController {
@@ -44,7 +42,7 @@ public class MakeMoveController {
 
 	private static GameResultDto toDto(final GameInfo gameResult) {
 		final String winnerId = gameResult.getWhoWon()
-				.map(player -> player.getId().toString())
+				.map(player -> player.getValue().toString())
 				.orElse(null);
 		return new GameResultDto(gameResult.getGameStatus().toString(), winnerId);
 	}

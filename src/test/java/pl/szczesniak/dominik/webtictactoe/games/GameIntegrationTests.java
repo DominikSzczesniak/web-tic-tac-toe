@@ -48,8 +48,8 @@ class GameIntegrationTests {
 		playersMatchedInvoker.playersMatched(playerOneId, playerTwoId);
 
 		// when
-		final ResponseEntity<Long> gameForPlayerOneResponse = getGameForPlayerRest.getGameForPlayer(playerOneId.getId());
-		final ResponseEntity<Long> gameForPlayerTwoResponse = getGameForPlayerRest.getGameForPlayer(playerTwoId.getId());
+		final ResponseEntity<Long> gameForPlayerOneResponse = getGameForPlayerRest.getGameForPlayer(playerOneId.getValue());
+		final ResponseEntity<Long> gameForPlayerTwoResponse = getGameForPlayerRest.getGameForPlayer(playerTwoId.getValue());
 
 		// then
 		assertThat(gameForPlayerTwoResponse.getBody()).isEqualTo(gameForPlayerOneResponse.getBody());
@@ -63,13 +63,13 @@ class GameIntegrationTests {
 
 		playersMatchedInvoker.playersMatched(playerOneId, playerTwoId);
 
-		final ResponseEntity<Long> checkGameIsReadyResponse = getGameForPlayerRest.getGameForPlayer(playerOneId.getId().toString());
+		final ResponseEntity<Long> checkGameIsReadyResponse = getGameForPlayerRest.getGameForPlayer(playerOneId.getValue().toString());
 		final Long gameId = checkGameIsReadyResponse.getBody();
 
 		// when
 		final ResponseEntity<GameResultDto> makeMoveResult_1 = makeMoveRest.makeMove(
 				gameId,
-				MakeMoveDto.builder().playerId(playerOneId.getId()).columnIndex(0).rowIndex(0).build()
+				MakeMoveDto.builder().playerId(playerOneId.getValue()).columnIndex(0).rowIndex(0).build()
 		);
 
 		// then
@@ -79,7 +79,7 @@ class GameIntegrationTests {
 		// when
 		final ResponseEntity<GameResultDto> makeMoveResult_2 = makeMoveRest.makeMove(
 				gameId,
-				MakeMoveDto.builder().playerId(playerTwoId.getId()).columnIndex(0).rowIndex(1).build()
+				MakeMoveDto.builder().playerId(playerTwoId.getValue()).columnIndex(0).rowIndex(1).build()
 		);
 
 		// then
@@ -89,7 +89,7 @@ class GameIntegrationTests {
 		// when
 		final ResponseEntity<GameResultDto> makeMoveResult_3 = makeMoveRest.makeMove(
 				gameId,
-				MakeMoveDto.builder().playerId(playerOneId.getId()).columnIndex(1).rowIndex(0).build()
+				MakeMoveDto.builder().playerId(playerOneId.getValue()).columnIndex(1).rowIndex(0).build()
 		);
 
 		// then
@@ -99,7 +99,7 @@ class GameIntegrationTests {
 		// when
 		final ResponseEntity<GameResultDto> makeMoveResult_4 = makeMoveRest.makeMove(
 				gameId,
-				MakeMoveDto.builder().playerId(playerTwoId.getId()).columnIndex(2).rowIndex(2).build()
+				MakeMoveDto.builder().playerId(playerTwoId.getValue()).columnIndex(2).rowIndex(2).build()
 		);
 
 		// then
@@ -109,14 +109,14 @@ class GameIntegrationTests {
 		// when
 		final ResponseEntity<GameResultDto> makeMoveResult_5 = makeMoveRest.makeMove(
 				gameId,
-				MakeMoveDto.builder().playerId(playerOneId.getId()).columnIndex(2).rowIndex(0).build()
+				MakeMoveDto.builder().playerId(playerOneId.getValue()).columnIndex(2).rowIndex(0).build()
 		);
 
 		// then
 		assertThat(makeMoveResult_5.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 		assertThat(makeMoveResult_5.getBody().getGameStatus()).isEqualToIgnoringCase("win");
-		assertThat(makeMoveResult_5.getBody().getPlayerThatWon()).isEqualTo(playerOneId.getId());
-		assertThat(makeMoveResult_5.getBody().getPlayerThatWon()).isNotEqualTo(playerTwoId.getId());
+		assertThat(makeMoveResult_5.getBody().getPlayerThatWon()).isEqualTo(playerOneId.getValue());
+		assertThat(makeMoveResult_5.getBody().getPlayerThatWon()).isNotEqualTo(playerTwoId.getValue());
 
 		// when
 		final ResponseEntity<Character[][]> getBoardViewResponse = getBoardViewRest.getBoardView(gameId);
@@ -143,7 +143,7 @@ class GameIntegrationTests {
 
 		playersMatchedInvoker.playersMatched(playerOneId, playerTwoId);
 
-		final ResponseEntity<Long> checkGameIsReadyResponse = getGameForPlayerRest.getGameForPlayer(playerTwoId.getId());
+		final ResponseEntity<Long> checkGameIsReadyResponse = getGameForPlayerRest.getGameForPlayer(playerTwoId.getValue());
 		final Long gameId = checkGameIsReadyResponse.getBody();
 
 		// when
@@ -151,28 +151,28 @@ class GameIntegrationTests {
 
 		// then
 		assertThat(playerToMoveResponse_1.getStatusCode()).isEqualTo(HttpStatus.OK);
-		assertThat(playerToMoveResponse_1.getBody()).isEqualTo(playerOneId.getId());
+		assertThat(playerToMoveResponse_1.getBody()).isEqualTo(playerOneId.getValue());
 
 		// when
-		makeMoveRest.makeMove(gameId, MakeMoveDto.builder().playerId(playerOneId.getId()).rowIndex(1).columnIndex(1).build());
+		makeMoveRest.makeMove(gameId, MakeMoveDto.builder().playerId(playerOneId.getValue()).rowIndex(1).columnIndex(1).build());
 
 		// then
 		final ResponseEntity<String> playerToMoveResponse_2 = getWhichPlayerToMoveRest.getWhichPlayerToMove(gameId);
-		assertThat(playerToMoveResponse_2.getBody()).isEqualTo(playerTwoId.getId());
+		assertThat(playerToMoveResponse_2.getBody()).isEqualTo(playerTwoId.getValue());
 
 		// when
-		makeMoveRest.makeMove(gameId, MakeMoveDto.builder().playerId(playerTwoId.getId()).rowIndex(2).columnIndex(2).build());
+		makeMoveRest.makeMove(gameId, MakeMoveDto.builder().playerId(playerTwoId.getValue()).rowIndex(2).columnIndex(2).build());
 
 		// then
 		final ResponseEntity<String> playerToMoveResponse_3 = getWhichPlayerToMoveRest.getWhichPlayerToMove(gameId);
-		assertThat(playerToMoveResponse_3.getBody()).isEqualTo(playerOneId.getId());
+		assertThat(playerToMoveResponse_3.getBody()).isEqualTo(playerOneId.getValue());
 
 		// when
-		makeMoveRest.makeMove(gameId, MakeMoveDto.builder().playerId(playerOneId.getId()).rowIndex(0).columnIndex(0).build());
+		makeMoveRest.makeMove(gameId, MakeMoveDto.builder().playerId(playerOneId.getValue()).rowIndex(0).columnIndex(0).build());
 
 		// then
 		final ResponseEntity<String> playerToMoveResponse_4 = getWhichPlayerToMoveRest.getWhichPlayerToMove(gameId);
-		assertThat(playerToMoveResponse_4.getBody()).isEqualTo(playerTwoId.getId());
+		assertThat(playerToMoveResponse_4.getBody()).isEqualTo(playerTwoId.getValue());
 	}
 
 }
