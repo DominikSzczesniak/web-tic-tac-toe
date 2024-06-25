@@ -12,6 +12,7 @@ import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.Symbol;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.DomainEventsPublisher;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.model.exceptions.ObjectDoesNotExistException;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameInfo;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.MyGameStatus;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.CreateGame;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.MakeMove;
@@ -29,14 +30,14 @@ class GamesService {
 
 	private final ConcurrentHashMap<TicTacToeGameId, SingleGame> gamesInProgress = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<TicTacToeGameId, TicTacToeGame> ticTacToeGames = new ConcurrentHashMap<>();
-	private final ConcurrentHashMap<UserId, Player> playerIds = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<UserId, Player> userIdToLibraryPlayer = new ConcurrentHashMap<>();
 	private final DomainEventsPublisher domainEventsPublisher;
 
-	TicTacToeGameId prepareGame(final CreateGame command) {
+	TicTacToeGameId createGame(final CreateGame command) {
 		final TicTacToeGame ticTacToeGame = createTicTacToeGame(command);
 		final SingleGame game = new SingleGame(
-				playerIds.get(ticTacToeGame.getPlayerOne()),
-				playerIds.get(ticTacToeGame.getPlayerTwo()),
+				userIdToLibraryPlayer.get(ticTacToeGame.getPlayerOne()),
+				userIdToLibraryPlayer.get(ticTacToeGame.getPlayerTwo()),
 				3
 		);
 
@@ -50,8 +51,8 @@ class GamesService {
 				command.getPlayerOne(),
 				command.getPlayerTwo()
 		);
-		playerIds.put(command.getPlayerOne(), new Player(new Symbol('O'), new PlayerName("asd")));
-		playerIds.put(command.getPlayerTwo(), new Player(new Symbol('X'), new PlayerName("qwe")));
+		userIdToLibraryPlayer.put(command.getPlayerOne(), new Player(new Symbol('O'), new PlayerName("asd")));
+		userIdToLibraryPlayer.put(command.getPlayerTwo(), new Player(new Symbol('X'), new PlayerName("qwe")));
 		ticTacToeGame.setNextPlayerToMove();
 		ticTacToeGames.put(ticTacToeGame.getGameId(), ticTacToeGame);
 		return ticTacToeGame;
@@ -73,7 +74,7 @@ class GamesService {
 									final SingleGame singleGame, final TicTacToeGame ticTacToeGame) {
 		final UserId player = ticTacToeGame.getNextPlayerToMove();
 		if (playerId.equals(player)) {
-			final GameResult gameResult = singleGame.makeMove(playerIds.get(playerId), playerMove);
+			final GameResult gameResult = singleGame.makeMove(userIdToLibraryPlayer.get(playerId), playerMove);
 			final GameInfo gameInfo = toMyGameResult(playerId, gameResult);
 			ticTacToeGame.setNextPlayerToMove();
 			return gameInfo;
@@ -84,10 +85,10 @@ class GamesService {
 	private static GameInfo toMyGameResult(final UserId userId, final GameResult gameResult) {
 		try {
 			if (gameResult.getWhoWon() != null) {
-				return new GameInfo(gameResult.getGameStatus(), userId);
+				return new GameInfo(MyGameStatus.fromGameStatus(gameResult.getGameStatus()), userId);
 			}
 		} catch (NullPointerException e) {
-			return new GameInfo(gameResult.getGameStatus(), null);
+			return new GameInfo(MyGameStatus.fromGameStatus(gameResult.getGameStatus()), null);
 		}
 		return null;
 	}
@@ -104,8 +105,8 @@ class GamesService {
 
 	void closeGame(final TicTacToeGameId ticTacToeGameId) {
 		final TicTacToeGame ticTacToeGame = getTicTacToeGame(ticTacToeGameId);
-		playerIds.remove(ticTacToeGame.getPlayerOne());
-		playerIds.remove(ticTacToeGame.getPlayerTwo());
+		userIdToLibraryPlayer.remove(ticTacToeGame.getPlayerOne());
+		userIdToLibraryPlayer.remove(ticTacToeGame.getPlayerTwo());
 		gamesInProgress.remove(ticTacToeGameId);
 		ticTacToeGames.remove(ticTacToeGameId);
 	}

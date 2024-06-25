@@ -14,8 +14,8 @@ public class QueueForGameRestInvoker {
 
 	public final TestRestTemplate restTemplate;
 
-	public ResponseEntity<String> queueForGame(final String username) {
-		final String urlWithParam = URL + "?userId=" + username;
+	public ResponseEntity<String> queueForGame(final String userId) {
+		final String urlWithParam = URL + "?userId=" + userId;
 		return restTemplate.exchange(
 				urlWithParam,
 				HttpMethod.POST,

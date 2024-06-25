@@ -3,7 +3,7 @@ package pl.szczesniak.dominik.webtictactoe.games.domain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.exceptions.OtherPlayerTurnException;
-import pl.szczesniak.dominik.webtictactoe.commons.domain.DomainEvent;
+import pl.szczesniak.dominik.webtictactoe.commons.domain.model.DomainEvent;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.InMemoryEventPublisher;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.model.exceptions.ObjectDoesNotExistException;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;

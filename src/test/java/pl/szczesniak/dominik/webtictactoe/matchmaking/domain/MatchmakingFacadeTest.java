@@ -2,9 +2,10 @@ package pl.szczesniak.dominik.webtictactoe.matchmaking.domain;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import pl.szczesniak.dominik.webtictactoe.commons.domain.DomainEvent;
+import pl.szczesniak.dominik.webtictactoe.commons.domain.model.DomainEvent;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.InMemoryEventPublisher;
 import pl.szczesniak.dominik.webtictactoe.matchmaking.domain.model.events.PlayersMatched;
+import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
 import java.util.List;
 
@@ -26,12 +27,17 @@ class MatchmakingFacadeTest {
 	@Test
 	void event_should_be_published_when_two_users_queued() {
 		// when
-		tut.queueToPlay(createAnyPlayerId());
-		tut.queueToPlay(createAnyPlayerId());
+		final UserId playerOne = createAnyPlayerId();
+		final UserId playerTwo = createAnyPlayerId();
+		tut.queueToPlay(playerOne);
+		tut.queueToPlay(playerTwo);
 
 		// then
 		final DomainEvent publishedEvent = eventPublisher.getPublishedEvents().get(0);
 		assertThat(publishedEvent.getClass()).isEqualTo(PlayersMatched.class);
+		final PlayersMatched event = (PlayersMatched) publishedEvent;
+		assertThat(event.getPlayerOne()).isEqualTo(playerOne);
+		assertThat(event.getPlayerTwo()).isEqualTo(playerTwo);
 	}
 
 	@Test

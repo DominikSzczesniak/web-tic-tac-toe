@@ -4,7 +4,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.GameStatus;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
 import java.util.Optional;
@@ -17,10 +16,10 @@ import static java.util.Optional.ofNullable;
 public class GameInfo {
 
 	@NonNull
-	private final GameStatus gameStatus; // todo
+	private final MyGameStatus gameStatus;
 	private final UserId whoWon;
 
-	public GameInfo(@NonNull final GameStatus gameStatus, final UserId whoWon) {
+	public GameInfo(@NonNull final MyGameStatus gameStatus, final UserId whoWon) {
 		this.gameStatus = gameStatus;
 		this.whoWon = whoWon;
 	}

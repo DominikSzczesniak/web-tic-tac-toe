@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import pl.szczesniak.dominik.webtictactoe.commons.infrastructure.outgoing.publishers.DomainEventPublisherInvoker;
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.CloseGameRestInvoker;
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.GetBoardViewRestInvoker;
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.GetGameForPlayerRestInvoker;
@@ -13,7 +12,6 @@ import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.MakeMoveRestInvoker;
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.MakeMoveRestInvoker.GameResultDto;
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.MakeMoveRestInvoker.MakeMoveDto;
-import pl.szczesniak.dominik.webtictactoe.matchmaking.domain.model.events.PlayersMatched;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,15 +37,15 @@ class GameIntegrationTests {
 	private GetWhichPlayerToMoveRestInvoker getWhichPlayerToMoveRest;
 
 	@Autowired
-	private DomainEventPublisherInvoker publisher;
+	private PlayersMatchedInvoker playersMatchedInvoker;
 
 	@Test
-	void queued_users_should_get_paired() {
+	void game_should_create_once_players_got_matched() {
 		// given
 		final UserId playerOneId = createAnyPlayerId();
 		final UserId playerTwoId = createAnyPlayerId();
 
-		publisher.publish(new PlayersMatched(playerOneId, playerTwoId));
+		playersMatchedInvoker.playersMatched(playerOneId, playerTwoId);
 
 		// when
 		final ResponseEntity<Long> gameForPlayerOneResponse = getGameForPlayerRest.getGameForPlayer(playerOneId.getId());
@@ -63,7 +61,7 @@ class GameIntegrationTests {
 		final UserId playerOneId = createAnyPlayerId();
 		final UserId playerTwoId = createAnyPlayerId();
 
-		publisher.publish(new PlayersMatched(playerOneId, playerTwoId));
+		playersMatchedInvoker.playersMatched(playerOneId, playerTwoId);
 
 		final ResponseEntity<Long> checkGameIsReadyResponse = getGameForPlayerRest.getGameForPlayer(playerOneId.getId().toString());
 		final Long gameId = checkGameIsReadyResponse.getBody();
@@ -143,7 +141,7 @@ class GameIntegrationTests {
 		final UserId playerOneId = createAnyPlayerId();
 		final UserId playerTwoId = createAnyPlayerId();
 
-		publisher.publish(new PlayersMatched(playerOneId, playerTwoId));
+		playersMatchedInvoker.playersMatched(playerOneId, playerTwoId);
 
 		final ResponseEntity<Long> checkGameIsReadyResponse = getGameForPlayerRest.getGameForPlayer(playerTwoId.getId());
 		final Long gameId = checkGameIsReadyResponse.getBody();

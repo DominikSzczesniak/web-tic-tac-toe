@@ -1,4 +1,4 @@
-package pl.szczesniak.dominik.webtictactoe.configuration;
+package pl.szczesniak.dominik.webtictactoe.configurations;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

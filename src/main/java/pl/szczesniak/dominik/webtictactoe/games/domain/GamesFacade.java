@@ -14,7 +14,7 @@ public class GamesFacade {
 	private final GamesService gamesService;
 
 	public TicTacToeGameId createGame(final CreateGame createGame) {
-		return gamesService.prepareGame(createGame);
+		return gamesService.createGame(createGame);
 	}
 
 	public GameInfo makeMove(final MakeMove command) {

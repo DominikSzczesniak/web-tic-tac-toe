@@ -8,8 +8,8 @@ import pl.szczesniak.dominik.webtictactoe.commons.domain.DomainEventsPublisher;
 class MatchmakingFacadeConfiguration {
 
 	@Bean
-	MatchmakingFacade matchmakingFacade(final DomainEventsPublisher domainEventsPublisher) {
-		return new MatchmakingFacade(new MatchmakingService(domainEventsPublisher));
+	MatchmakingFacade matchmakingFacade(final DomainEventsPublisher domainEventsPublisher, final InMemoryPlayersInQueueRepository repository) {
+		return new MatchmakingFacade(domainEventsPublisher, repository);
 	}
 
 }
