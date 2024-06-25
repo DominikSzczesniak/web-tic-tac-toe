@@ -19,8 +19,6 @@ import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.MakeMove;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.events.MoveMade;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
-import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Optional.ofNullable;
@@ -29,7 +27,7 @@ import static java.util.Optional.ofNullable;
 class GamesService {
 
 	private final ConcurrentHashMap<TicTacToeGameId, SingleGame> gamesInProgress = new ConcurrentHashMap<>();
-//	private final ConcurrentHashMap<TicTacToeGameId, TicTacToeGame> ticTacToeGames = new ConcurrentHashMap<>();
+	//	private final ConcurrentHashMap<TicTacToeGameId, TicTacToeGame> ticTacToeGames = new ConcurrentHashMap<>();
 	private final TicTacToeGamesRepository ticTacToeGamesRepository;
 	private final ConcurrentHashMap<UserId, Player> userIdToLibraryPlayer = new ConcurrentHashMap<>();
 	private final DomainEventsPublisher domainEventsPublisher;
@@ -48,7 +46,6 @@ class GamesService {
 
 	private TicTacToeGame createTicTacToeGame(final CreateGame command) {
 		final TicTacToeGame ticTacToeGame = new TicTacToeGame(
-				new TicTacToeGameId(new Random().nextLong(1, 10000000)),
 				command.getPlayerOne(),
 				command.getPlayerTwo()
 		);
@@ -56,6 +53,7 @@ class GamesService {
 		userIdToLibraryPlayer.put(command.getPlayerTwo(), new Player(new Symbol('X'), new PlayerName("qwe")));
 		ticTacToeGame.setNextPlayerToMove();
 //		ticTacToeGames.put(ticTacToeGame.getGameId(), ticTacToeGame);
+		System.out.println("creating game");
 		ticTacToeGamesRepository.create(ticTacToeGame);
 		return ticTacToeGame;
 	}

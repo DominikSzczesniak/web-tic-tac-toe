@@ -4,17 +4,21 @@ import pl.szczesniak.dominik.webtictactoe.commons.domain.model.exceptions.Object
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
+import java.lang.reflect.Field;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static java.util.Optional.ofNullable;
 
 public class InMemoryTicTacToeGamesRepository implements TicTacToeGamesRepository {
 
+	private final AtomicLong nextId = new AtomicLong(0);
 	private final ConcurrentHashMap<TicTacToeGameId, TicTacToeGame> ticTacToeGames = new ConcurrentHashMap<>();
 
 	@Override
 	public void create(final TicTacToeGame ticTacToeGame) {
+		setId(ticTacToeGame, nextId.incrementAndGet());
 		ticTacToeGames.put(ticTacToeGame.getGameId(), ticTacToeGame);
 	}
 
@@ -41,6 +45,19 @@ public class InMemoryTicTacToeGamesRepository implements TicTacToeGamesRepositor
 						ticTacToeGame.getPlayerOne().equals(playerId)
 								|| ticTacToeGame.getPlayerTwo().equals(playerId))
 				.findFirst();
-		return game.orElseThrow(() -> new ObjectDoesNotExistException("Game for player=" + playerId + " does not exist")).getGameId();
+		return game.orElseThrow(
+				() -> new ObjectDoesNotExistException("Game for player=" + playerId + " does not exist")).getGameId();
 	}
+
+	private void setId(final TicTacToeGame game, final Long id) {
+		final Class<TicTacToeGame> movieClass = TicTacToeGame.class;
+		try {
+			final Field movieId = movieClass.getDeclaredField("gameId");
+			movieId.setAccessible(true);
+			movieId.set(game, id);
+		} catch (NoSuchFieldException | IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 }

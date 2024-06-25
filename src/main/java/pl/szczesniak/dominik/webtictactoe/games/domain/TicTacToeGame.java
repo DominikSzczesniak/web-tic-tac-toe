@@ -3,7 +3,6 @@ package pl.szczesniak.dominik.webtictactoe.games.domain;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Embedded;
@@ -14,14 +13,12 @@ import static org.springframework.data.relational.core.mapping.Embedded.OnEmpty.
 
 @ToString
 @Getter
-@RequiredArgsConstructor
 @EqualsAndHashCode(of = {"gameId"})
 class TicTacToeGame {
 
-	@NonNull
+//	@Embedded(onEmpty = USE_EMPTY, prefix = "game_id")
 	@Id
-	@Embedded(onEmpty = USE_EMPTY, prefix = "game_id")
-	private final TicTacToeGameId gameId;
+	private Long gameId;
 
 	@NonNull
 	@Embedded(onEmpty = USE_EMPTY, prefix = "player_one")
@@ -34,6 +31,11 @@ class TicTacToeGame {
 	@Embedded(onEmpty = USE_EMPTY, prefix = "player_to_move")
 	private UserId nextPlayerToMove;
 
+	public TicTacToeGame(@NonNull final UserId playerOne, @NonNull final UserId playerTwo) {
+		this.playerOne = playerOne;
+		this.playerTwo = playerTwo;
+	}
+
 	void setNextPlayerToMove() {
 		if (nextPlayerToMove == null || nextPlayerToMove.equals(playerTwo)) {
 			nextPlayerToMove = playerOne;
@@ -42,6 +44,9 @@ class TicTacToeGame {
 		}
 	}
 
+	TicTacToeGameId getGameId() {
+		return new TicTacToeGameId(gameId);
+	}
 }
 
 
