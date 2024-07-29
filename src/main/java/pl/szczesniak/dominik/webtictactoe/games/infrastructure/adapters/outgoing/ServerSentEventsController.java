@@ -11,10 +11,10 @@ import pl.szczesniak.dominik.webtictactoe.sse.SseService;
 @RequiredArgsConstructor
 public class ServerSentEventsController {
 
-	private final SseService sseService;
+	private final SseService sse;
 
 	@GetMapping("/api/subscribe/games/{gameId}")
 	public SseEmitter subscribeToGame(@PathVariable final Long gameId) {
-		return sseService.subscribeToGame(gameId);
+		return sse.subscribeToGame(gameId);
 	}
 }
