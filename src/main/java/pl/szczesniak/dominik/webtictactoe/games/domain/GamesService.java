@@ -52,8 +52,6 @@ class GamesService {
 		userIdToLibraryPlayer.put(command.getPlayerOne(), new Player(new Symbol('O'), new PlayerName("asd")));
 		userIdToLibraryPlayer.put(command.getPlayerTwo(), new Player(new Symbol('X'), new PlayerName("qwe")));
 		ticTacToeGame.setNextPlayerToMove();
-//		ticTacToeGames.put(ticTacToeGame.getGameId(), ticTacToeGame);
-		System.out.println("creating game");
 		ticTacToeGamesRepository.create(ticTacToeGame);
 		return ticTacToeGame;
 	}
