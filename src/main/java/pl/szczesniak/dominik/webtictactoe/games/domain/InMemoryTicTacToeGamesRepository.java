@@ -1,5 +1,6 @@
 package pl.szczesniak.dominik.webtictactoe.games.domain;
 
+import org.springframework.stereotype.Repository;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.model.exceptions.ObjectDoesNotExistException;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
@@ -11,7 +12,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static java.util.Optional.ofNullable;
 
-public class InMemoryTicTacToeGamesRepository implements TicTacToeGamesRepository {
+@Repository
+class InMemoryTicTacToeGamesRepository implements TicTacToeGamesRepository {
 
 	private final AtomicLong nextId = new AtomicLong(0);
 	private final ConcurrentHashMap<TicTacToeGameId, TicTacToeGame> ticTacToeGames = new ConcurrentHashMap<>();
