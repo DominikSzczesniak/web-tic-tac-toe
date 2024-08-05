@@ -6,8 +6,9 @@ import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.util.Optional.ofNullable;
@@ -16,7 +17,7 @@ import static java.util.Optional.ofNullable;
 class InMemoryTicTacToeGamesRepository implements TicTacToeGamesRepository {
 
 	private final AtomicLong nextId = new AtomicLong(0);
-	private final ConcurrentHashMap<TicTacToeGameId, TicTacToeGame> ticTacToeGames = new ConcurrentHashMap<>();
+	private final Map<TicTacToeGameId, TicTacToeGame> ticTacToeGames = new HashMap<>();
 
 	@Override
 	public void create(final TicTacToeGame ticTacToeGame) {

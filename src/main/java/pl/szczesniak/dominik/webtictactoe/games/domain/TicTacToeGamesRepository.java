@@ -9,7 +9,7 @@ import pl.szczesniak.dominik.webtictactoe.commons.domain.model.exceptions.Object
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
-public interface TicTacToeGamesRepository {
+interface TicTacToeGamesRepository {
 
 	void create(TicTacToeGame ticTacToeGame);
 

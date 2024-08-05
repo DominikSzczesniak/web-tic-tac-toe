@@ -1,14 +1,16 @@
 package pl.szczesniak.dominik.webtictactoe.games;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameInfo;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.MyGameStatus;
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.GetGameForPlayerRestInvoker;
-import pl.szczesniak.dominik.webtictactoe.sse.SpringSseService;
+import pl.szczesniak.dominik.webtictactoe.sse.SpringSseService.MoveMadeDTO;
 import pl.szczesniak.dominik.webtictactoe.sse.SseService;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
@@ -37,6 +39,11 @@ class GameSseIntegrationTests {
 	@Autowired
 	private SseService sseService;
 
+	@BeforeEach
+	void setUp() {
+		Mockito.reset(sseService);
+	}
+
 	@Test
 	void should_send_message_once_move_was_made() {
 		// given
@@ -49,19 +56,19 @@ class GameSseIntegrationTests {
 		final Long gameId = checkGameIsReadyResponse.getBody();
 
 		// when
-		final ArgumentCaptor<SpringSseService.MoveMadeDTO> captor = ArgumentCaptor.forClass(SpringSseService.MoveMadeDTO.class);
+		final ArgumentCaptor<MoveMadeDTO> captor = ArgumentCaptor.forClass(MoveMadeDTO.class);
 		moveMadeInvoker.moveMade(gameId, new GameInfo(MyGameStatus.WIN, playerOneId));
 
 		// then
 		verify(sseService, times(1)).handleMoveMadeEvent(captor.capture());
 
-		final SpringSseService.MoveMadeDTO capturedArgument = captor.getValue();
+		final MoveMadeDTO capturedArgument = captor.getValue();
 		assertThat(gameId).isEqualTo(capturedArgument.getGameId());
 		assertThat(playerOneId.getValue()).isEqualTo(capturedArgument.getWhoWon());
 		verifyFieldNames(capturedArgument);
 	}
 
-	private void verifyFieldNames(final SpringSseService.MoveMadeDTO dto) {
+	private void verifyFieldNames(final MoveMadeDTO dto) {
 		final List<String> expectedFieldNames = List.of("gameId", "whoWon");
 		final List<String> actualFieldNames = Arrays.stream(dto.getClass().getDeclaredFields())
 				.map(Field::getName)

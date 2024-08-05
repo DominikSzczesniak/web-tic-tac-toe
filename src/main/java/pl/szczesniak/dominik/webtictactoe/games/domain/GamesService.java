@@ -5,7 +5,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.SingleGame;
-import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.exceptions.OtherPlayerTurnException;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.GameResult;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.Player;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.PlayerMove;
@@ -32,14 +31,12 @@ class GamesService {
 
 	TicTacToeGameId createGame(final CreateGame command) {
 		final TicTacToeGame ticTacToeGame = new TicTacToeGame(command.getPlayerOne(), command.getPlayerTwo());
-		ticTacToeGame.setNextPlayerToMove();
 		ticTacToeGamesRepository.create(ticTacToeGame);
 		return ticTacToeGame.getGameId();
 	}
 
 	GameInfo makeMove(final MakeMove command) {
 		final TicTacToeGame ticTacToeGame = getTicTacToeGame(command.getGameId());
-		checkIsPlayerTurn(command.getPlayerId(), ticTacToeGame.getNextPlayerToMove());
 
 		final MoveContext moveContext = replayTheGame(ticTacToeGame);
 		final GameInfo gameResult = makePlayerMove(command.getPlayerId(), command.getPlayerMove(), ticTacToeGame, moveContext);
@@ -54,15 +51,8 @@ class GamesService {
 		final SingleGame singleGame = moveContext.getSingleGame();
 
 		final GameResult gameResult = singleGame.makeMove(moveContext.getPlayerToMove(), playerMove);
-		ticTacToeGame.setNextPlayerToMove();
-		ticTacToeGame.addMove(new MyPlayerMove(playerMove.getRowIndex(), playerMove.getColumnIndex()));
+		ticTacToeGame.addMove(new MyPlayerMove(playerMove.getRowIndex(), playerMove.getColumnIndex(), playerId));
 		return toMyGameResult(playerId, gameResult);
-	}
-
-	private void checkIsPlayerTurn(final UserId playerId, final UserId playerToMove) {
-		if (!playerId.equals(playerToMove)) {
-			throw new OtherPlayerTurnException("Other player to move.");
-		}
 	}
 
 	private static GameInfo toMyGameResult(final UserId userId, final GameResult gameResult) {
@@ -81,26 +71,30 @@ class GamesService {
 		return ticTacToeGame.getNextPlayerToMove();
 	}
 
-	Character[][] getBoardView(final Long gameId) {
-		final TicTacToeGame ticTacToeGame = getTicTacToeGame(new TicTacToeGameId(gameId));
+	Character[][] getBoardView(final TicTacToeGameId gameId) {
+		final TicTacToeGame ticTacToeGame = getTicTacToeGame(gameId);
 		final MoveContext moveContext = replayTheGame(ticTacToeGame);
 		return moveContext.getSingleGame().getBoardView();
 	}
 
 	private MoveContext replayTheGame(final TicTacToeGame ticTacToeGame) {
+		final Map<UserId, Player> players = preparePlayers(ticTacToeGame);
+		final SingleGame singleGame = prepareSingleGame(players.get(ticTacToeGame.getPlayerOne()), players.get(ticTacToeGame.getPlayerTwo()));
+		ticTacToeGame.getMoves().forEach(move -> executeHistoryMove(players, singleGame, move));
+		return new MoveContext(singleGame, players.get(ticTacToeGame.getNextPlayerToMove()));
+	}
+
+	private static Map<UserId, Player> preparePlayers(final TicTacToeGame ticTacToeGame) {
 		final Map<UserId, Player> players = new ConcurrentHashMap<>();
 		final Player playerOne = new Player(new Symbol('O'), new PlayerName("asd"));
 		final Player playerTwo = new Player(new Symbol('X'), new PlayerName("qwe"));
 		players.put(ticTacToeGame.getPlayerOne(), playerOne);
 		players.put(ticTacToeGame.getPlayerTwo(), playerTwo);
+		return players;
+	}
 
-		final SingleGame singleGame = prepareSingleGame(playerOne, playerTwo);
-		ticTacToeGame.setPlayerToMoveToDefault();
-		ticTacToeGame.getMoves().forEach(move -> {
-			singleGame.makeMove(players.get(ticTacToeGame.getNextPlayerToMove()), new PlayerMove(move.getRow(), move.getColumn()));
-			ticTacToeGame.setNextPlayerToMove();
-		});
-		return new MoveContext(singleGame, players.get(ticTacToeGame.getNextPlayerToMove()));
+	private static void executeHistoryMove(final Map<UserId, Player> players, final SingleGame singleGame, final MyPlayerMove move) {
+		singleGame.makeMove(players.get(move.getPlayer()), new PlayerMove(move.getRow(), move.getColumn()));
 	}
 
 	private static SingleGame prepareSingleGame(final Player playerOne, final Player playerTwo) {

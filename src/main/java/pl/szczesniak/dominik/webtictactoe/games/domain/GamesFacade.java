@@ -25,7 +25,7 @@ public class GamesFacade {
 		return gamesService.getPlayerToMove(gameId);
 	}
 
-	public Character[][] getBoardView(final Long gameId) {
+	public Character[][] getBoardView(final TicTacToeGameId gameId) {
 		return gamesService.getBoardView(gameId);
 	}
 
