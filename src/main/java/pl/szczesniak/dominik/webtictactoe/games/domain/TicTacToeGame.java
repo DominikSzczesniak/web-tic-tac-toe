@@ -58,13 +58,13 @@ class TicTacToeGame {
 
 	private void checkFirstPlayer(final MyPlayerMove currentMove) {
 		if (currentMove.getPlayer().equals(playerTwo)) {
-			throw new OtherPlayerTurnException("TODO");
+			throw new OtherPlayerTurnException("The first move must be made by Player One.");
 		}
 	}
 
 	private static void checkOtherPlayerThanLastTime(final MyPlayerMove currentMove, final MyPlayerMove lastMove) {
 		if (lastMove.getPlayer().equals(currentMove.getPlayer())) {
-			throw new OtherPlayerTurnException("TODO");
+			throw new OtherPlayerTurnException("Same player tried to make a move.");
 		}
 	}
 
