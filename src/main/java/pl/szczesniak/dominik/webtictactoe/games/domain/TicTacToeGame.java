@@ -33,23 +33,12 @@ class TicTacToeGame {
 	@Embedded(onEmpty = USE_EMPTY, prefix = "player_two")
 	private final UserId playerTwo;
 
-//	@Embedded(onEmpty = USE_EMPTY, prefix = "player_to_move")
-//	private UserId nextPlayerToMove;
-
 	private final List<MyPlayerMove> moves = new ArrayList<>();
 
 	public TicTacToeGame(@NonNull final UserId playerOne, @NonNull final UserId playerTwo) {
 		this.playerOne = playerOne;
 		this.playerTwo = playerTwo;
 	}
-
-//	private void setNextPlayerToMove() {
-//		if (nextPlayerToMove == null || nextPlayerToMove.equals(playerTwo)) {
-//			nextPlayerToMove = playerOne;
-//		} else {
-//			nextPlayerToMove = playerTwo;
-//		}
-//	}
 
 	TicTacToeGameId getGameId() {
 		return new TicTacToeGameId(gameId);
