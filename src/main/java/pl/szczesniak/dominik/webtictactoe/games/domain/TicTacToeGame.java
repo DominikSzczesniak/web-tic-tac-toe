@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Embedded;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.exceptions.OtherPlayerTurnException;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.MyPlayerMove;
@@ -14,16 +15,19 @@ import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.springframework.data.relational.core.mapping.Embedded.OnEmpty.USE_EMPTY;
 
 @ToString
 @Getter
-@EqualsAndHashCode(of = {"gameId"})
+@EqualsAndHashCode(of = {"id"})
 class TicTacToeGame {
 
 	@Id
-	private Long gameId;
+	private Long gameId = 1L;
+
+	private final String id = UUID.randomUUID().toString();
 
 	@NonNull
 	@Embedded(onEmpty = USE_EMPTY, prefix = "player_one")
@@ -33,6 +37,7 @@ class TicTacToeGame {
 	@Embedded(onEmpty = USE_EMPTY, prefix = "player_two")
 	private final UserId playerTwo;
 
+	@Transient
 	private final List<MyPlayerMove> moves = new ArrayList<>();
 
 	public TicTacToeGame(@NonNull final UserId playerOne, @NonNull final UserId playerTwo) {

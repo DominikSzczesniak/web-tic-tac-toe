@@ -22,6 +22,7 @@
         <tic-tac-toe-core.version>1.2.0</tic-tac-toe-core.version>
         <lombok.version>1.18.26</lombok.version>
         <reactor-core.version>3.6.5</reactor-core.version>
+        <liquibase-core.version>4.27.0</liquibase-core.version>
 
         <commons-lang3.version>3.14.0</commons-lang3.version>
         <assertj-core.version>3.24.2</assertj-core.version>
@@ -67,6 +68,12 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>42.7.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>${liquibase-core.version}</version>
         </dependency>
 
         <dependency>
