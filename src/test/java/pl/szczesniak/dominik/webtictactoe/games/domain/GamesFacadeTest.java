@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static pl.szczesniak.dominik.webtictactoe.games.domain.TestGamesFacadeConfiguration.gamesFacade;
 import static pl.szczesniak.dominik.webtictactoe.games.domain.model.PlayerIdSample.createAnyPlayerId;
+import static pl.szczesniak.dominik.webtictactoe.games.domain.model.PlayerMoveSample.createAnyPlayerMove;
 
 class GamesFacadeTest {
 
@@ -74,7 +75,7 @@ class GamesFacadeTest {
 
 		// when
 		final Throwable thrown = catchThrowable(() -> tut.makeMove(MakeMoveSample.builder()
-				.ticTacToeGameId(ticTacToeGame).playerId(playerOne).build()));
+				.ticTacToeGameId(ticTacToeGame).playerMove(createAnyPlayerMove(playerOne)).build()));
 
 		// then
 		assertThat(thrown).isInstanceOf(ObjectDoesNotExistException.class);
@@ -95,7 +96,7 @@ class GamesFacadeTest {
 		assertThat(gameInfo.getPlayerToMove()).isEqualTo(playerOne);
 
 		// when
-		tut.makeMove(MakeMoveSample.builder().playerId(playerOne).ticTacToeGameId(ticTacToeGame).build());
+		tut.makeMove(MakeMoveSample.builder().ticTacToeGameId(ticTacToeGame).playerMove(createAnyPlayerMove(playerOne)).build());
 
 		// then
 		assertThat(tut.getGameInfo(ticTacToeGame).getPlayerToMove()).isEqualTo(playerTwo);
@@ -113,7 +114,7 @@ class GamesFacadeTest {
 
 		// when
 		final Throwable thrown = catchThrowable(() -> tut.makeMove(MakeMoveSample.builder()
-				.ticTacToeGameId(ticTacToeGame).playerId(playerTwo).build()));
+				.ticTacToeGameId(ticTacToeGame).playerMove(createAnyPlayerMove(playerTwo)).build()));
 
 		// then
 		assertThat(thrown).isInstanceOf(OtherPlayerTurnException.class);
@@ -132,6 +133,22 @@ class GamesFacadeTest {
 	}
 
 	@Test
+	void should_publish_event_when_player_makes_move() {
+		// given
+		final UserId playerOne = createAnyPlayerId();
+		final UserId playerTwo = createAnyPlayerId();
+
+		final TicTacToeGameId ticTacToeGame = tut.createGame(CreateGameSample.builder().playerOne(playerOne).playerTwo(playerTwo).build());
+
+		// when
+		tut.makeMove(MakeMoveSample.builder().ticTacToeGameId(ticTacToeGame).playerMove(createAnyPlayerMove(playerOne)).build());
+
+		// then
+		final DomainEvent publishedEvent = eventPublisher.getPublishedEvents().get(0);
+		assertThat(publishedEvent.getClass()).isEqualTo(MoveMade.class);
+	}
+
+	@Test
 	void players_should_play_full_game() {
 		// given
 		final UserId playerOne = createAnyPlayerId();
@@ -141,55 +158,39 @@ class GamesFacadeTest {
 
 		// when
 		final GameState gameState_1 = tut.makeMove(MakeMoveSample.builder()
-				.playerId(playerOne).ticTacToeGameId(gameId).playerMove(new MyPlayerMove(0, 0, playerOne)).build());
+				.ticTacToeGameId(gameId).playerMove(new MyPlayerMove(0, 0, playerOne)).build());
 
 		// then
 		assertThat(gameState_1.getGameStatus()).isEqualTo(MyGameStatus.IN_PROGRESS);
 
 		// when
 		final GameState gameState_2 = tut.makeMove(MakeMoveSample.builder()
-				.playerId(playerTwo).ticTacToeGameId(gameId).playerMove(new MyPlayerMove(0, 1, playerTwo)).build());
+				.ticTacToeGameId(gameId).playerMove(new MyPlayerMove(0, 1, playerTwo)).build());
 
 		// then
 		assertThat(gameState_2.getGameStatus()).isEqualTo(MyGameStatus.IN_PROGRESS);
 
 		// when
 		final GameState gameState_3 = tut.makeMove(MakeMoveSample.builder()
-				.playerId(playerOne).ticTacToeGameId(gameId).playerMove(new MyPlayerMove(1, 0, playerOne)).build());
+				.ticTacToeGameId(gameId).playerMove(new MyPlayerMove(1, 0, playerOne)).build());
 
 		// then
 		assertThat(gameState_3.getGameStatus()).isEqualTo(MyGameStatus.IN_PROGRESS);
 
 		// when
 		final GameState gameState_4 = tut.makeMove(MakeMoveSample.builder()
-				.playerId(playerTwo).ticTacToeGameId(gameId).playerMove(new MyPlayerMove(0, 2, playerTwo)).build());
+				.ticTacToeGameId(gameId).playerMove(new MyPlayerMove(0, 2, playerTwo)).build());
 
 		// then
 		assertThat(gameState_4.getGameStatus()).isEqualTo(MyGameStatus.IN_PROGRESS);
 
 		// when
 		final GameState gameStateFinish = tut.makeMove(MakeMoveSample.builder()
-				.playerId(playerOne).ticTacToeGameId(gameId).playerMove(new MyPlayerMove(2, 0, playerOne)).build());
+				.ticTacToeGameId(gameId).playerMove(new MyPlayerMove(2, 0, playerOne)).build());
 
 		// then
 		assertThat(gameStateFinish.getGameStatus()).isEqualTo(MyGameStatus.WIN);
 		assertThat(gameStateFinish.getWhoWon().get()).isEqualTo(playerOne);
-	}
-
-	@Test
-	void should_publish_event_when_player_makes_move() {
-		// given
-		final UserId playerOne = createAnyPlayerId();
-		final UserId playerTwo = createAnyPlayerId();
-
-		final TicTacToeGameId ticTacToeGame = tut.createGame(CreateGameSample.builder().playerOne(playerOne).playerTwo(playerTwo).build());
-
-		// when
-		tut.makeMove(MakeMoveSample.builder().playerId(playerOne).ticTacToeGameId(ticTacToeGame).build());
-
-		// then
-		final DomainEvent publishedEvent = eventPublisher.getPublishedEvents().get(0);
-		assertThat(publishedEvent.getClass()).isEqualTo(MoveMade.class);
 	}
 
 }

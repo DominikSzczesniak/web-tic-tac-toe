@@ -26,7 +26,6 @@ public class MakeMoveController {
 		try {
 			final GameState gameResult = gamesFacade.makeMove(new MakeMove(
 					new TicTacToeGameId(gameId),
-					new UserId(makeMoveDto.getPlayerId()),
 					new MyPlayerMove(makeMoveDto.getRowIndex(), makeMoveDto.getColumnIndex(), new UserId(makeMoveDto.getPlayerId()))
 			));
 
