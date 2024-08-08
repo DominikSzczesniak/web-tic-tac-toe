@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
+import java.util.Optional;
+
 interface TicTacToeGamesRepository {
 
 	void create(TicTacToeGame ticTacToeGame);
@@ -16,7 +18,7 @@ interface TicTacToeGamesRepository {
 
 	void remove(TicTacToeGameId ticTacToeGameId);
 
-	TicTacToeGame getGame(TicTacToeGameId gameId);
+	Optional<TicTacToeGame> getGame(TicTacToeGameId gameId);
 
 	TicTacToeGameId getGameForPlayer(UserId playerId);
 }
@@ -40,8 +42,8 @@ interface SpringDataJDBCTicTacToeGamesRepository extends TicTacToeGamesRepositor
 	}
 
 	@Override
-	default TicTacToeGame getGame(TicTacToeGameId gameId) {
-		return findByGameId(gameId.getValue());
+	default Optional<TicTacToeGame> getGame(TicTacToeGameId gameId) {
+		return Optional.ofNullable(findByGameId(gameId.getValue()));
 	}
 
 	@Override

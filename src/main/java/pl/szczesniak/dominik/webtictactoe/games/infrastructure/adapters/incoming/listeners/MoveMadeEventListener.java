@@ -21,7 +21,7 @@ class MoveMadeEventListener {
 	}
 
 	private MoveMadeDTO toDto(final MoveMade event) {
-		return new MoveMadeDTO(event.getGameId(), event.getGameInfo().getWhoWon().map(UserId::getValue).orElse(null));
+		return new MoveMadeDTO(event.getGameId().getValue(), event.getGameState().getWhoWon().map(UserId::getValue).orElse(null));
 	}
 
 }

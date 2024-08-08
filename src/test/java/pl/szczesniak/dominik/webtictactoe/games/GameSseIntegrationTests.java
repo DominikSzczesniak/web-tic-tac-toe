@@ -7,7 +7,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
-import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameInfo;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameState;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.MyGameStatus;
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.GetGameForPlayerRestInvoker;
 import pl.szczesniak.dominik.webtictactoe.sse.SpringSseService.MoveMadeDTO;
@@ -57,7 +57,7 @@ class GameSseIntegrationTests {
 
 		// when
 		final ArgumentCaptor<MoveMadeDTO> captor = ArgumentCaptor.forClass(MoveMadeDTO.class);
-		moveMadeInvoker.moveMade(gameId, new GameInfo(MyGameStatus.WIN, playerOneId));
+		moveMadeInvoker.moveMade(gameId, new GameState(MyGameStatus.WIN, playerOneId));
 
 		// then
 		verify(sseService, times(1)).handleMoveMadeEvent(captor.capture());

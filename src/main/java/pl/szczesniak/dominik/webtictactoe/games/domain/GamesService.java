@@ -9,7 +9,8 @@ import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.PlayerMove;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.PlayerName;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.Symbol;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.DomainEventsPublisher;
-import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameInfo;
+import pl.szczesniak.dominik.webtictactoe.commons.domain.model.exceptions.ObjectDoesNotExistException;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameState;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.MyGameStatus;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.MyPlayerMove;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
@@ -26,6 +27,7 @@ class GamesService {
 
 	private final TicTacToeGamesRepository ticTacToeGamesRepository;
 	private final DomainEventsPublisher domainEventsPublisher;
+//	private final TicTacToeGameRules ticTacToeGameRules;
 
 	TicTacToeGameId createGame(final CreateGame command) {
 		final TicTacToeGame ticTacToeGame = new TicTacToeGame(command.getPlayerOne(), command.getPlayerTwo());
@@ -33,37 +35,38 @@ class GamesService {
 		return ticTacToeGame.getGameId();
 	}
 
-	GameInfo makeMove(final MakeMove command) {
+	GameState makeMove(final MakeMove command) {
 		final TicTacToeGame ticTacToeGame = getTicTacToeGame(command.getGameId());
 
-		final PlayerMove playerMove = command.getPlayerMove();
-		final GameInfo gameResult = makeMoveInLibrary(getTicTacToeGame(command.getGameId()), playerMove);
-		ticTacToeGame.addMove(new MyPlayerMove(playerMove.getRowIndex(), playerMove.getColumnIndex(), command.getPlayerId()));
+//		final GameState gameState = ticTacToeGameRules.makeMove(ticTacToeGame.getMoves(), command.getPlayerMove());
+
+		final GameState gameResult = makeMoveInLibrary(ticTacToeGame, new PlayerMove(command.getPlayerMove().getRow(), command.getPlayerMove().getColumn()));
+		ticTacToeGame.addMove(command.getPlayerMove());
 
 		ticTacToeGamesRepository.update(ticTacToeGame);
-		domainEventsPublisher.publish(new MoveMade(command.getGameId().getValue(), gameResult));
+		domainEventsPublisher.publish(new MoveMade(command.getGameId(), gameResult));
 		return gameResult;
 	}
 
-	private GameInfo makeMoveInLibrary(final TicTacToeGame ticTacToeGame, final PlayerMove playerMove) {
+	private GameState makeMoveInLibrary(final TicTacToeGame ticTacToeGame, final PlayerMove playerMove) {
 		final Map<UserId, Player> players = preparePlayers(ticTacToeGame);
 		final SingleGame singleGame = prepareSingleGame(players.get(ticTacToeGame.getPlayerOne()), players.get(ticTacToeGame.getPlayerTwo()));
 		ticTacToeGame.getMoves().forEach(move -> executeHistoryMove(players, singleGame, move));
 		return makeNewMove(ticTacToeGame.getNextPlayerToMove(), players.get(ticTacToeGame.getNextPlayerToMove()), playerMove, singleGame);
 	}
 
-	private GameInfo makeNewMove(final UserId playerId, final Player player, final PlayerMove playerMove, final SingleGame singleGame) {
+	private GameState makeNewMove(final UserId playerId, final Player player, final PlayerMove playerMove, final SingleGame singleGame) {
 		final GameResult gameResult = singleGame.makeMove(player, playerMove);
 		return toMyGameResult(playerId, gameResult);
 	}
 
-	private static GameInfo toMyGameResult(final UserId userId, final GameResult gameResult) {
+	private static GameState toMyGameResult(final UserId userId, final GameResult gameResult) {
 		try {
 			if (gameResult.getWhoWon() != null) {
-				return new GameInfo(MyGameStatus.fromGameStatus(gameResult.getGameStatus()), userId);
+				return new GameState(MyGameStatus.fromGameStatus(gameResult.getGameStatus()), userId);
 			}
 		} catch (NullPointerException e) {
-			return new GameInfo(MyGameStatus.fromGameStatus(gameResult.getGameStatus()), null);
+			return new GameState(MyGameStatus.fromGameStatus(gameResult.getGameStatus()), null);
 		}
 		return null;
 	}
@@ -78,7 +81,7 @@ class GamesService {
 	}
 
 	private Character[][] replayTheGameForBoard(final TicTacToeGameId gameId) {
-		final TicTacToeGame ticTacToeGame = ticTacToeGamesRepository.getGame(gameId);
+		final TicTacToeGame ticTacToeGame = getTicTacToeGame(gameId);
 		final Map<UserId, Player> players = preparePlayers(ticTacToeGame);
 		final SingleGame singleGame = prepareSingleGame(players.get(ticTacToeGame.getPlayerOne()), players.get(ticTacToeGame.getPlayerTwo()));
 		ticTacToeGame.getMoves().forEach(move -> executeHistoryMove(players, singleGame, move));
@@ -107,7 +110,7 @@ class GamesService {
 	}
 
 	private TicTacToeGame getTicTacToeGame(final TicTacToeGameId gameId) {
-		return ticTacToeGamesRepository.getGame(gameId);
+		return ticTacToeGamesRepository.getGame(gameId).orElseThrow(() -> new ObjectDoesNotExistException("Game " + gameId + " does not exist"));
 	}
 
 	TicTacToeGameId getGameForPlayer(final UserId playerId) {

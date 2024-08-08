@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.PlayerMove;
 import pl.szczesniak.dominik.webtictactoe.games.domain.GamesFacade;
-import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameInfo;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameState;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.MyPlayerMove;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.MakeMove;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
@@ -24,11 +24,11 @@ public class MakeMoveController {
 	@PostMapping("/api/games/{gameId}/move")
 	public ResponseEntity<?> makeMove(@PathVariable final Long gameId, @RequestBody final MakeMoveDto makeMoveDto) {
 		try {
-			final GameInfo gameResult = gamesFacade.makeMove(new MakeMove(
+			final GameState gameResult = gamesFacade.makeMove(new MakeMove(
 					new TicTacToeGameId(gameId),
 					new UserId(makeMoveDto.getPlayerId()),
-					new PlayerMove(makeMoveDto.getRowIndex(), makeMoveDto.getColumnIndex()))
-			);
+					new MyPlayerMove(makeMoveDto.getRowIndex(), makeMoveDto.getColumnIndex(), new UserId(makeMoveDto.getPlayerId()))
+			));
 
 			final GameResultDto gameResultDto = toDto(gameResult);
 
@@ -40,15 +40,15 @@ public class MakeMoveController {
 		}
 	}
 
-	private static GameResultDto toDto(final GameInfo gameResult) {
+	private static GameResultDto toDto(final GameState gameResult) {
 		final String winnerId = gameResult.getWhoWon()
-				.map(player -> player.getValue().toString())
+				.map(UserId::getValue)
 				.orElse(null);
 		return new GameResultDto(gameResult.getGameStatus().toString(), winnerId);
 	}
 
 	@Data
-	static class MakeMoveDto {
+	public static class MakeMoveDto {
 		private final String playerId;
 		private final Integer rowIndex;
 		private final Integer columnIndex;

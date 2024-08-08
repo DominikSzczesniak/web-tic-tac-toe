@@ -2,7 +2,7 @@ package pl.szczesniak.dominik.webtictactoe.games.domain;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameInfo;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameState;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.CreateGame;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.MakeMove;
@@ -17,7 +17,7 @@ public class GamesFacade {
 		return gamesService.createGame(createGame);
 	}
 
-	public GameInfo makeMove(final MakeMove command) {
+	public GameState makeMove(final MakeMove command) {
 		return gamesService.makeMove(command);
 	}
 

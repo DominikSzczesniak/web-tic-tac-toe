@@ -34,9 +34,8 @@ class InMemoryTicTacToeGamesRepository implements TicTacToeGamesRepository {
 	}
 
 	@Override
-	public TicTacToeGame getGame(final TicTacToeGameId gameId) {
-		return ofNullable(ticTacToeGames.get(gameId)).orElseThrow(
-				() -> new ObjectDoesNotExistException("Game with gameId=" + gameId + " does not exist"));
+	public Optional<TicTacToeGame> getGame(final TicTacToeGameId gameId) {
+		return ofNullable(ticTacToeGames.get(gameId));
 	}
 
 	@Override
