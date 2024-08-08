@@ -63,7 +63,7 @@ class GameIntegrationTests {
 
 		playersMatchedInvoker.playersMatched(playerOneId, playerTwoId);
 
-		final ResponseEntity<Long> checkGameIsReadyResponse = getGameForPlayerRest.getGameForPlayer(playerOneId.getValue().toString());
+		final ResponseEntity<Long> checkGameIsReadyResponse = getGameForPlayerRest.getGameForPlayer(playerOneId.getValue());
 		final Long gameId = checkGameIsReadyResponse.getBody();
 
 		// when

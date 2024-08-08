@@ -5,8 +5,9 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.relational.core.mapping.Embedded;
+import org.springframework.data.relational.core.mapping.MappedCollection;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.exceptions.OtherPlayerTurnException;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.MyPlayerMove;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
@@ -25,25 +26,37 @@ import static org.springframework.data.relational.core.mapping.Embedded.OnEmpty.
 class TicTacToeGame {
 
 	@Id
-	private Long gameId = 1L;
+	private Long gameId;
 
-	private final String id = UUID.randomUUID().toString();
+	private final String id;
 
 	@NonNull
-	@Embedded(onEmpty = USE_EMPTY, prefix = "player_one")
+	@Embedded(onEmpty = USE_EMPTY, prefix = "player_one_id_")
 	private final UserId playerOne;
 
 	@NonNull
-	@Embedded(onEmpty = USE_EMPTY, prefix = "player_two")
+	@Embedded(onEmpty = USE_EMPTY, prefix = "player_two_id_")
 	private final UserId playerTwo;
 
-	@Transient
-	private final List<MyPlayerMove> moves = new ArrayList<>();
+	@MappedCollection(idColumn = "game_id", keyColumn = "move_key")
+	private final List<MyPlayerMove> moves;
 
 	public TicTacToeGame(@NonNull final UserId playerOne, @NonNull final UserId playerTwo) {
 		this.playerOne = playerOne;
 		this.playerTwo = playerTwo;
+		this.id = UUID.randomUUID().toString();
+		this.moves = new ArrayList<>();
 	}
+
+	@PersistenceCreator
+	TicTacToeGame(@NonNull final UserId playerTwo, @NonNull final UserId playerOne, final Long gameId, final String id, List<MyPlayerMove> moves) {
+		this.playerTwo = playerTwo;
+		this.playerOne = playerOne;
+		this.gameId = gameId;
+		this.id = id;
+		this.moves = moves != null ? new ArrayList<>(moves) : new ArrayList<>();
+	}
+
 
 	TicTacToeGameId getGameId() {
 		return new TicTacToeGameId(gameId);
