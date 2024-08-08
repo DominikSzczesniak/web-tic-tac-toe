@@ -108,7 +108,7 @@ function Board({gameId, playerId, onGameFinish}) {
                     }
                 }
             }
-            fetchBoardView(gameId);
+            fetchGameInfo(gameId);
         });
 
         eventSource.onerror = (event) => {
@@ -176,29 +176,6 @@ function Board({gameId, playerId, onGameFinish}) {
         }
     }
 
-    useEffect(() => {
-        if (gameId) {
-            fetchPlayerToMove(gameId);
-        }
-    }, [gameId, boardView]);
-
-    async function fetchPlayerToMove(gameId) {
-        try {
-            const response = await fetch(`http://localhost:8080/api/games/${gameId}/move`);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const data = await response.text();
-            if (data === playerId) {
-                setIsPlayerTurn(true);
-            } else {
-                setIsPlayerTurn(false);
-            }
-        } catch (error) {
-            console.error('Error fetching player to move:', error);
-        }
-    }
-
     async function makeMove(rowIndex, columnIndex) {
         try {
             const response = await fetch(`http://localhost:8080/api/games/${gameId}/move`, {
@@ -221,23 +198,28 @@ function Board({gameId, playerId, onGameFinish}) {
         }
     }
 
-    async function fetchBoardView(gameId) {
+    async function fetchGameInfo(gameId) {
         try {
             const response = await fetch(`http://localhost:8080/api/games/${gameId}`);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
             const data = await response.json();
-            setBoardView(data);
+            setBoardView(data.boardView);
+            if (data.userId === playerId) {
+                setIsPlayerTurn(true);
+            } else {
+                setIsPlayerTurn(false);
+            }
             console.log("updated board ", data);
-            checkGameStatus(data);
+            checkGameStatus(data.boardView);
         } catch (error) {
             console.error('Error fetching board view:', error);
         }
     }
 
     useEffect(() => {
-        fetchBoardView(gameId)
+        fetchGameInfo(gameId)
     }, [gameId]);
 
     return (

@@ -6,9 +6,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.CloseGameRestInvoker;
-import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.GetBoardViewRestInvoker;
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.GetGameForPlayerRestInvoker;
-import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.GetWhichPlayerToMoveRestInvoker;
+import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.GetGameInfoRestInvoker;
+import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.GetGameInfoRestInvoker.GameInfoDTO;
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.MakeMoveRestInvoker;
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.MakeMoveRestInvoker.GameResultDto;
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.MakeMoveRestInvoker.MakeMoveDto;
@@ -30,11 +30,14 @@ class GameIntegrationTests {
 	@Autowired
 	private CloseGameRestInvoker closeGameRest;
 
-	@Autowired
-	private GetBoardViewRestInvoker getBoardViewRest;
+//	@Autowired
+//	private GetBoardViewRestInvoker getBoardViewRest;
+//
+//	@Autowired
+//	private GetWhichPlayerToMoveRestInvoker getWhichPlayerToMoveRest;
 
 	@Autowired
-	private GetWhichPlayerToMoveRestInvoker getWhichPlayerToMoveRest;
+	private GetGameInfoRestInvoker getGameInfoRest;
 
 	@Autowired
 	private PlayersMatchedInvoker playersMatchedInvoker;
@@ -119,11 +122,11 @@ class GameIntegrationTests {
 		assertThat(makeMoveResult_5.getBody().getPlayerThatWon()).isNotEqualTo(playerTwoId.getValue());
 
 		// when
-		final ResponseEntity<Character[][]> getBoardViewResponse = getBoardViewRest.getBoardView(gameId);
+		final ResponseEntity<GameInfoDTO> getGameInfoResponse = getGameInfoRest.getGameInfo(gameId);
 
 		// then
-		assertThat(getBoardViewResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-		final Character[][] boardView = getBoardViewResponse.getBody();
+		assertThat(getGameInfoResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+		final Character[][] boardView = getGameInfoResponse.getBody().getBoardView();
 		assertThat(boardView[0]).containsExactly('O', 'O', 'O');
 		assertThat(boardView[1]).containsExactly('X', null, null);
 		assertThat(boardView[2]).containsExactly(null, null, 'X');
@@ -147,32 +150,32 @@ class GameIntegrationTests {
 		final Long gameId = checkGameIsReadyResponse.getBody();
 
 		// when
-		final ResponseEntity<String> playerToMoveResponse_1 = getWhichPlayerToMoveRest.getWhichPlayerToMove(gameId);
+		final ResponseEntity<GameInfoDTO> gameInfoResponse_1 = getGameInfoRest.getGameInfo(gameId);
 
 		// then
-		assertThat(playerToMoveResponse_1.getStatusCode()).isEqualTo(HttpStatus.OK);
-		assertThat(playerToMoveResponse_1.getBody()).isEqualTo(playerOneId.getValue());
+		assertThat(gameInfoResponse_1.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(gameInfoResponse_1.getBody().getUserId()).isEqualTo(playerOneId.getValue());
 
 		// when
 		makeMoveRest.makeMove(gameId, MakeMoveDto.builder().playerId(playerOneId.getValue()).rowIndex(1).columnIndex(1).build());
 
 		// then
-		final ResponseEntity<String> playerToMoveResponse_2 = getWhichPlayerToMoveRest.getWhichPlayerToMove(gameId);
-		assertThat(playerToMoveResponse_2.getBody()).isEqualTo(playerTwoId.getValue());
+		final ResponseEntity<GameInfoDTO> gameInfoResponse_2 = getGameInfoRest.getGameInfo(gameId);
+		assertThat(gameInfoResponse_2.getBody().getUserId()).isEqualTo(playerTwoId.getValue());
 
 		// when
 		makeMoveRest.makeMove(gameId, MakeMoveDto.builder().playerId(playerTwoId.getValue()).rowIndex(2).columnIndex(2).build());
 
 		// then
-		final ResponseEntity<String> playerToMoveResponse_3 = getWhichPlayerToMoveRest.getWhichPlayerToMove(gameId);
-		assertThat(playerToMoveResponse_3.getBody()).isEqualTo(playerOneId.getValue());
+		final ResponseEntity<GameInfoDTO> gameInfoResponse_3 = getGameInfoRest.getGameInfo(gameId);
+		assertThat(gameInfoResponse_3.getBody().getUserId()).isEqualTo(playerOneId.getValue());
 
 		// when
 		makeMoveRest.makeMove(gameId, MakeMoveDto.builder().playerId(playerOneId.getValue()).rowIndex(0).columnIndex(0).build());
 
 		// then
-		final ResponseEntity<String> playerToMoveResponse_4 = getWhichPlayerToMoveRest.getWhichPlayerToMove(gameId);
-		assertThat(playerToMoveResponse_4.getBody()).isEqualTo(playerTwoId.getValue());
+		final ResponseEntity<GameInfoDTO> gameInfoResponse_4 = getGameInfoRest.getGameInfo(gameId);
+		assertThat(gameInfoResponse_4.getBody().getUserId()).isEqualTo(playerTwoId.getValue());
 	}
 
 }

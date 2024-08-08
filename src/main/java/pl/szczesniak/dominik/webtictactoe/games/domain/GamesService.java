@@ -10,6 +10,7 @@ import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.PlayerName;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.Symbol;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.DomainEventsPublisher;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.model.exceptions.ObjectDoesNotExistException;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameInfo;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameState;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.MyGameStatus;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.MyPlayerMove;
@@ -40,12 +41,13 @@ class GamesService {
 
 //		final GameState gameState = ticTacToeGameRules.makeMove(ticTacToeGame.getMoves(), command.getPlayerMove());
 
-		final GameState gameResult = makeMoveInLibrary(ticTacToeGame, new PlayerMove(command.getPlayerMove().getRow(), command.getPlayerMove().getColumn()));
+		final GameState gameState = makeMoveInLibrary(
+				ticTacToeGame, new PlayerMove(command.getPlayerMove().getRow(), command.getPlayerMove().getColumn()));
 		ticTacToeGame.addMove(command.getPlayerMove());
 
 		ticTacToeGamesRepository.update(ticTacToeGame);
-		domainEventsPublisher.publish(new MoveMade(command.getGameId(), gameResult));
-		return gameResult;
+		domainEventsPublisher.publish(new MoveMade(command.getGameId(), gameState));
+		return gameState;
 	}
 
 	private GameState makeMoveInLibrary(final TicTacToeGame ticTacToeGame, final PlayerMove playerMove) {
@@ -71,17 +73,23 @@ class GamesService {
 		return null;
 	}
 
-	UserId getPlayerToMove(final TicTacToeGameId gameId) {
+//	UserId getPlayerToMove(final TicTacToeGameId gameId) {
+//		final TicTacToeGame ticTacToeGame = getTicTacToeGame(gameId);
+//		return ticTacToeGame.getNextPlayerToMove();
+//	}
+//
+//	Character[][] getBoardView(final TicTacToeGameId gameId) {
+//		final TicTacToeGame ticTacToeGame = getTicTacToeGame(gameId);
+//		return replayTheGameForBoard(ticTacToeGame);
+//	}
+
+	GameInfo getGameInfo(final TicTacToeGameId gameId) {
 		final TicTacToeGame ticTacToeGame = getTicTacToeGame(gameId);
-		return ticTacToeGame.getNextPlayerToMove();
+		final Character[][] boardView = replayTheGameForBoard(ticTacToeGame);
+		return new GameInfo(ticTacToeGame.getNextPlayerToMove(), boardView);
 	}
 
-	Character[][] getBoardView(final TicTacToeGameId gameId) {
-		return replayTheGameForBoard(gameId);
-	}
-
-	private Character[][] replayTheGameForBoard(final TicTacToeGameId gameId) {
-		final TicTacToeGame ticTacToeGame = getTicTacToeGame(gameId);
+	private Character[][] replayTheGameForBoard(final TicTacToeGame ticTacToeGame) {
 		final Map<UserId, Player> players = preparePlayers(ticTacToeGame);
 		final SingleGame singleGame = prepareSingleGame(players.get(ticTacToeGame.getPlayerOne()), players.get(ticTacToeGame.getPlayerTwo()));
 		ticTacToeGame.getMoves().forEach(move -> executeHistoryMove(players, singleGame, move));

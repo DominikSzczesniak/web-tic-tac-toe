@@ -9,11 +9,8 @@ import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 @Value
 public class MakeMove {
 
-	@NonNull
-	TicTacToeGameId gameId;
-	@NonNull
-	UserId playerId;
-	@NonNull
-	MyPlayerMove playerMove;
+	@NonNull TicTacToeGameId gameId;
+	@NonNull UserId playerId;
+	@NonNull MyPlayerMove playerMove;
 
 }
