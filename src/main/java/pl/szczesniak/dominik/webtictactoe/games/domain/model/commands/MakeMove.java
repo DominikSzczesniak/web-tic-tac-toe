@@ -9,6 +9,6 @@ import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 public class MakeMove {
 
 	@NonNull TicTacToeGameId gameId;
-	@NonNull GameMove playerMove;
+	@NonNull GameMove move;
 
 }

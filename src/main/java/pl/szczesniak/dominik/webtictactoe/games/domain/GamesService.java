@@ -28,8 +28,8 @@ class GamesService {
 		final TicTacToeGame ticTacToeGame = getTicTacToeGame(command.getGameId());
 		final TicTacToeRules ticTacToeRules = new TicTacToeRules(ticTacToeGame);
 
-		final GameState gameState = ticTacToeRules.makeMove(command.getPlayerMove());
-		ticTacToeGame.addMove(command.getPlayerMove());
+		final GameState gameState = ticTacToeRules.makeMove(command.getMove());
+		ticTacToeGame.addMove(command.getMove());
 
 		ticTacToeGamesRepository.update(ticTacToeGame);
 		domainEventsPublisher.publish(new MoveMade(command.getGameId(), gameState));

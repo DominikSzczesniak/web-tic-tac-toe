@@ -133,22 +133,6 @@ class GamesFacadeTest {
 	}
 
 	@Test
-	void should_publish_event_when_player_makes_move() {
-		// given
-		final UserId playerOne = createAnyUserId();
-		final UserId playerTwo = createAnyUserId();
-
-		final TicTacToeGameId ticTacToeGame = tut.createGame(CreateGameSample.builder().playerOne(playerOne).playerTwo(playerTwo).build());
-
-		// when
-		tut.makeMove(MakeMoveSample.builder().ticTacToeGameId(ticTacToeGame).playerMove(createAnyPlayerMove(playerOne)).build());
-
-		// then
-		final DomainEvent publishedEvent = eventPublisher.getPublishedEvents().get(0);
-		assertThat(publishedEvent.getClass()).isEqualTo(MoveMade.class);
-	}
-
-	@Test
 	void players_should_play_full_game() {
 		// given
 		final UserId playerOne = createAnyUserId();
@@ -191,6 +175,22 @@ class GamesFacadeTest {
 		// then
 		assertThat(gameStateFinish.getGameStatus()).isEqualTo(MyGameStatus.WIN);
 		assertThat(gameStateFinish.getWhoWon().get()).isEqualTo(playerOne);
+	}
+
+	@Test
+	void should_publish_event_when_player_makes_move() {
+		// given
+		final UserId playerOne = createAnyUserId();
+		final UserId playerTwo = createAnyUserId();
+
+		final TicTacToeGameId ticTacToeGame = tut.createGame(CreateGameSample.builder().playerOne(playerOne).playerTwo(playerTwo).build());
+
+		// when
+		tut.makeMove(MakeMoveSample.builder().ticTacToeGameId(ticTacToeGame).playerMove(createAnyPlayerMove(playerOne)).build());
+
+		// then
+		final DomainEvent publishedEvent = eventPublisher.getPublishedEvents().get(0);
+		assertThat(publishedEvent.getClass()).isEqualTo(MoveMade.class);
 	}
 
 }
