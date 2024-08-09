@@ -12,7 +12,7 @@ import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 
 @RequiredArgsConstructor
 @RestController
-public class GetGameStateController {
+public class GetGameInfoController {
 
 	private final GamesFacade gamesFacade;
 

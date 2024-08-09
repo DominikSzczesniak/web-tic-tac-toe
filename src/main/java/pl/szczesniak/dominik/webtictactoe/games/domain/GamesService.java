@@ -42,12 +42,12 @@ class GamesService {
 		return ticTacToeRules.gameInfo();
 	}
 
-	void closeGame(final TicTacToeGameId ticTacToeGameId) {
-		ticTacToeGamesRepository.remove(ticTacToeGameId);
-	}
-
 	private TicTacToeGame getTicTacToeGame(final TicTacToeGameId gameId) {
 		return ticTacToeGamesRepository.getGame(gameId).orElseThrow(() -> new ObjectDoesNotExistException("Game " + gameId + " does not exist"));
+	}
+
+	void closeGame(final TicTacToeGameId ticTacToeGameId) {
+		ticTacToeGamesRepository.remove(ticTacToeGameId);
 	}
 
 	TicTacToeGameId getGameForPlayer(final UserId playerId) {

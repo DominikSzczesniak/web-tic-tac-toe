@@ -27,8 +27,11 @@ class TicTacToeRules {
 	GameState makeMove(final GameMove playerMove) {
 		final Map<UserId, Player> players = preparePlayers();
 		final SingleGame singleGame = prepareSingleGame(players.get(ticTacToeGame.getPlayerOne()), players.get(ticTacToeGame.getPlayerTwo()));
+
 		ticTacToeGame.getMoves().forEach(move -> executeHistoryMove(players, singleGame, move));
-		final GameResult gameResult = singleGame.makeMove(players.get(playerMove.getPlayer()), new PlayerMove(playerMove.getRow(), playerMove.getColumn()));
+		final GameResult gameResult = singleGame.makeMove(
+				players.get(playerMove.getPlayer()), new PlayerMove(playerMove.getRow(), playerMove.getColumn()));
+
 		return toGameState(playerMove.getPlayer(), gameResult);
 	}
 
