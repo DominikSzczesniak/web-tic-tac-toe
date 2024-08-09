@@ -10,7 +10,7 @@ import pl.szczesniak.dominik.webtictactoe.games.domain.model.events.MoveMade;
 
 @Component
 @RequiredArgsConstructor
-public class MoveMadeInvoker {
+class MoveMadeInvoker {
 
 	private final ApplicationEventPublisher applicationEventPublisher;
 

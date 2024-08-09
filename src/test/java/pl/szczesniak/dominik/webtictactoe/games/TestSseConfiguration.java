@@ -8,7 +8,7 @@ import pl.szczesniak.dominik.webtictactoe.sse.SpringSseService;
 import pl.szczesniak.dominik.webtictactoe.sse.SseService;
 
 @Configuration
-public class TestSseConfiguration {
+class TestSseConfiguration {
 
 	@Primary
 	@Bean("service.stub")
