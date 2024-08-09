@@ -9,7 +9,7 @@ class GameFacadeConfiguration {
 
 	@Bean
 	public GamesFacade gamesFacade(final DomainEventsPublisher domainEventsPublisher, final TicTacToeGamesRepository repository) {
-		return new GamesFacade(new GamesService(repository, domainEventsPublisher));
+		return new GamesFacade(repository, domainEventsPublisher);
 	}
 
 }
