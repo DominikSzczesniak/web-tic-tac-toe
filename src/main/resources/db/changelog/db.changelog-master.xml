@@ -21,7 +21,7 @@
             </column>
         </createTable>
 
-        <createTable tableName="player_move">
+        <createTable tableName="game_move">
             <column name="game_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
@@ -42,7 +42,7 @@
         <addPrimaryKey
                 columnNames="game_id, move_key"
                 constraintName="pk_player_move"
-                tableName="player_move"/>
+                tableName="game_move"/>
     </changeSet>
 
 </databaseChangeLog>

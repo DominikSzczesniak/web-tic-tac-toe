@@ -9,7 +9,7 @@ import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.relational.core.mapping.Embedded;
 import org.springframework.data.relational.core.mapping.MappedCollection;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.exceptions.OtherPlayerTurnException;
-import pl.szczesniak.dominik.webtictactoe.games.domain.model.MyPlayerMove;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameMove;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
@@ -39,7 +39,7 @@ class TicTacToeGame {
 	private final UserId playerTwo;
 
 	@MappedCollection(idColumn = "game_id", keyColumn = "move_key")
-	private final List<MyPlayerMove> moves;
+	private final List<GameMove> moves;
 
 	public TicTacToeGame(@NonNull final UserId playerOne, @NonNull final UserId playerTwo) {
 		this.playerOne = playerOne;
@@ -49,7 +49,7 @@ class TicTacToeGame {
 	}
 
 	@PersistenceCreator
-	TicTacToeGame(@NonNull final UserId playerTwo, @NonNull final UserId playerOne, final Long gameId, final String id, List<MyPlayerMove> moves) {
+	TicTacToeGame(@NonNull final UserId playerTwo, @NonNull final UserId playerOne, final Long gameId, final String id, List<GameMove> moves) {
 		this.playerTwo = playerTwo;
 		this.playerOne = playerOne;
 		this.gameId = gameId;
@@ -62,40 +62,32 @@ class TicTacToeGame {
 		return new TicTacToeGameId(gameId);
 	}
 
-	void addMove(final MyPlayerMove currentMove) {
+	void addMove(final GameMove currentMove) {
 		checkIsPlayerMove(currentMove);
 		moves.add(currentMove);
 	}
 
-	private void checkIsPlayerMove(final MyPlayerMove currentMove) {
+	private void checkIsPlayerMove(final GameMove currentMove) {
 		getLastMove().ifPresentOrElse(
 				lastMove -> checkOtherPlayerThanLastTime(currentMove, lastMove),
 				() -> checkFirstPlayer(currentMove)
 		);
 	}
 
-	private void checkFirstPlayer(final MyPlayerMove currentMove) {
+	private void checkFirstPlayer(final GameMove currentMove) {
 		if (currentMove.getPlayer().equals(playerTwo)) {
 			throw new OtherPlayerTurnException("The first move must be made by Player One.");
 		}
 	}
 
-	private static void checkOtherPlayerThanLastTime(final MyPlayerMove currentMove, final MyPlayerMove lastMove) {
+	private static void checkOtherPlayerThanLastTime(final GameMove currentMove, final GameMove lastMove) {
 		if (lastMove.getPlayer().equals(currentMove.getPlayer())) {
 			throw new OtherPlayerTurnException("Same player tried to make a move.");
 		}
 	}
 
-	private Optional<MyPlayerMove> getLastMove() {
+	private Optional<GameMove> getLastMove() {
 		return moves.isEmpty() ? Optional.empty() : Optional.of(moves.get(moves.size() - 1));
-	}
-
-	UserId getNextPlayerToMove() {
-		final Optional<UserId> lastPlayer = getLastMove().map(MyPlayerMove::getPlayer);
-		if (lastPlayer.isEmpty()) {
-			return playerOne;
-		}
-		return lastPlayer.get().equals(playerOne) ? playerTwo : playerOne;
 	}
 
 }

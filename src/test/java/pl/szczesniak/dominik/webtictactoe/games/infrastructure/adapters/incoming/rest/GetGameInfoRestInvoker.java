@@ -29,10 +29,8 @@ public class GetGameInfoRestInvoker {
 
 	@Value
 	public static class GameInfoDTO {
-		@NonNull
-		String userId;
-		@NonNull
-		Character[][] boardView;
+		@NonNull String userId;
+		@NonNull Character[][] boardView;
 	}
 
 }

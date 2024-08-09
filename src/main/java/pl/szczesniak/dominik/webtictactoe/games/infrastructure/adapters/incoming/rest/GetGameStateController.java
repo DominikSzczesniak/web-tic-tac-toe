@@ -12,12 +12,12 @@ import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 
 @RequiredArgsConstructor
 @RestController
-public class GetGameInfoController {
+public class GetGameStateController {
 
 	private final GamesFacade gamesFacade;
 
 	@GetMapping("/api/games/{gameId}")
-	public ResponseEntity<GameInfoDto> getBoardView(@PathVariable final Long gameId) {
+	public ResponseEntity<GameInfoDto> getGameState(@PathVariable final Long gameId) {
 		final GameInfo gameInfo = gamesFacade.getGameInfo(new TicTacToeGameId(gameId));
 		final GameInfoDto dto = toDto(gameInfo);
 		return ResponseEntity.status(200).body(dto);

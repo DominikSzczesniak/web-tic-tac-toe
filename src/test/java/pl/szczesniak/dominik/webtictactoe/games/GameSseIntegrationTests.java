@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-import static pl.szczesniak.dominik.webtictactoe.games.domain.model.PlayerIdSample.createAnyPlayerId;
+import static pl.szczesniak.dominik.webtictactoe.games.domain.model.UserIdSample.createAnyUserId;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 class GameSseIntegrationTests {
@@ -47,8 +47,8 @@ class GameSseIntegrationTests {
 	@Test
 	void should_send_message_once_move_was_made() {
 		// given
-		final UserId playerOneId = createAnyPlayerId();
-		final UserId playerTwoId = createAnyPlayerId();
+		final UserId playerOneId = createAnyUserId();
+		final UserId playerTwoId = createAnyUserId();
 
 		playersMatchedInvoker.playersMatched(playerOneId, playerTwoId);
 

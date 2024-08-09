@@ -16,7 +16,7 @@ import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-import static pl.szczesniak.dominik.webtictactoe.games.domain.model.PlayerIdSample.createAnyPlayerId;
+import static pl.szczesniak.dominik.webtictactoe.games.domain.model.UserIdSample.createAnyUserId;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 class GameIntegrationTests {
@@ -30,12 +30,6 @@ class GameIntegrationTests {
 	@Autowired
 	private CloseGameRestInvoker closeGameRest;
 
-//	@Autowired
-//	private GetBoardViewRestInvoker getBoardViewRest;
-//
-//	@Autowired
-//	private GetWhichPlayerToMoveRestInvoker getWhichPlayerToMoveRest;
-
 	@Autowired
 	private GetGameInfoRestInvoker getGameInfoRest;
 
@@ -45,8 +39,8 @@ class GameIntegrationTests {
 	@Test
 	void game_should_create_once_players_got_matched() {
 		// given
-		final UserId playerOneId = createAnyPlayerId();
-		final UserId playerTwoId = createAnyPlayerId();
+		final UserId playerOneId = createAnyUserId();
+		final UserId playerTwoId = createAnyUserId();
 
 		playersMatchedInvoker.playersMatched(playerOneId, playerTwoId);
 
@@ -61,8 +55,8 @@ class GameIntegrationTests {
 	@Test
 	void game_should_finish_once_player_has_won() {
 		// given
-		final UserId playerOneId = createAnyPlayerId();
-		final UserId playerTwoId = createAnyPlayerId();
+		final UserId playerOneId = createAnyUserId();
+		final UserId playerTwoId = createAnyUserId();
 
 		playersMatchedInvoker.playersMatched(playerOneId, playerTwoId);
 
@@ -141,8 +135,8 @@ class GameIntegrationTests {
 	@Test
 	void should_get_which_player_to_move_before_the_player_moves() {
 		// given
-		final UserId playerOneId = createAnyPlayerId();
-		final UserId playerTwoId = createAnyPlayerId();
+		final UserId playerOneId = createAnyUserId();
+		final UserId playerTwoId = createAnyUserId();
 
 		playersMatchedInvoker.playersMatched(playerOneId, playerTwoId);
 

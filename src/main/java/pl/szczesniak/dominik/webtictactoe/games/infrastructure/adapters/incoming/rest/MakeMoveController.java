@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import pl.szczesniak.dominik.webtictactoe.games.domain.GamesFacade;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameState;
-import pl.szczesniak.dominik.webtictactoe.games.domain.model.MyPlayerMove;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameMove;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.MakeMove;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
@@ -26,12 +26,12 @@ public class MakeMoveController {
 		try {
 			final GameState gameResult = gamesFacade.makeMove(new MakeMove(
 					new TicTacToeGameId(gameId),
-					new MyPlayerMove(makeMoveDto.getRowIndex(), makeMoveDto.getColumnIndex(), new UserId(makeMoveDto.getPlayerId()))
+					new GameMove(makeMoveDto.getRowIndex(), makeMoveDto.getColumnIndex(), new UserId(makeMoveDto.getPlayerId()))
 			));
 
-			final GameResultDto gameResultDto = toDto(gameResult);
+			final GameStateDto gameStateDto = toDto(gameResult);
 
-			return ResponseEntity.status(201).body(gameResultDto);
+			return ResponseEntity.status(201).body(gameStateDto);
 		} catch (IllegalArgumentException e) {
 			return ResponseEntity.status(400).body(e.getMessage());
 		} catch (NullPointerException e) {
@@ -39,11 +39,11 @@ public class MakeMoveController {
 		}
 	}
 
-	private static GameResultDto toDto(final GameState gameResult) {
-		final String winnerId = gameResult.getWhoWon()
+	private static GameStateDto toDto(final GameState gameState) {
+		final String winnerId = gameState.getWhoWon()
 				.map(UserId::getValue)
 				.orElse(null);
-		return new GameResultDto(gameResult.getGameStatus().toString(), winnerId);
+		return new GameStateDto(gameState.getGameStatus().toString(), winnerId);
 	}
 
 	@Data
@@ -54,7 +54,7 @@ public class MakeMoveController {
 	}
 
 	@Value
-	private static class GameResultDto {
+	private static class GameStateDto {
 		String gameStatus;
 		String playerThatWon;
 	}

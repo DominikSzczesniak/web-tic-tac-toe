@@ -4,9 +4,9 @@ import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
 import java.util.UUID;
 
-public class PlayerIdSample {
+public class UserIdSample {
 
-	public static UserId createAnyPlayerId() {
+	public static UserId createAnyUserId() {
 		return new UserId(UUID.randomUUID().toString());
 	}
 

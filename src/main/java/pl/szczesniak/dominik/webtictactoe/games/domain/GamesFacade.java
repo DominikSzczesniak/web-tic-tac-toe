@@ -2,6 +2,7 @@ package pl.szczesniak.dominik.webtictactoe.games.domain;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameInfo;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameState;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
@@ -14,10 +15,12 @@ public class GamesFacade {
 
 	private final GamesService gamesService;
 
+	@Transactional
 	public TicTacToeGameId createGame(final CreateGame createGame) {
 		return gamesService.createGame(createGame);
 	}
 
+	@Transactional
 	public GameState makeMove(final MakeMove command) {
 		return gamesService.makeMove(command);
 	}
@@ -26,6 +29,7 @@ public class GamesFacade {
 		return gamesService.getGameInfo(gameId);
 	}
 
+	@Transactional
 	public void closeGame(final TicTacToeGameId ticTacToeGameId) {
 		gamesService.closeGame(ticTacToeGameId);
 	}
