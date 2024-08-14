@@ -16,7 +16,7 @@ import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-import static pl.szczesniak.dominik.webtictactoe.games.domain.model.UserIdSample.createAnyUserId;
+import static pl.szczesniak.dominik.webtictactoe.users.domain.model.UserIdSample.createAnyUserId;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 class GameIntegrationTests {

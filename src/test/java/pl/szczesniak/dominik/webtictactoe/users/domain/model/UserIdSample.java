@@ -1,6 +1,4 @@
-package pl.szczesniak.dominik.webtictactoe.games.domain.model;
-
-import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
+package pl.szczesniak.dominik.webtictactoe.users.domain.model;
 
 import java.util.UUID;
 

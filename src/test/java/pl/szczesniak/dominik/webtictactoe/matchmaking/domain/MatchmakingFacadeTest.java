@@ -10,7 +10,7 @@ import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.szczesniak.dominik.webtictactoe.games.domain.model.UserIdSample.createAnyUserId;
+import static pl.szczesniak.dominik.webtictactoe.users.domain.model.UserIdSample.createAnyUserId;
 import static pl.szczesniak.dominik.webtictactoe.matchmaking.domain.TestMatchmakingFacadeConfiguration.matchmakingFacade;
 
 class MatchmakingFacadeTest {
