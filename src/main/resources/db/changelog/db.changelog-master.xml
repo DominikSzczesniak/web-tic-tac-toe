@@ -5,44 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="web-tic-tac-toe-1" author="tictactoe/games">
-        <createTable tableName="tic_tac_toe_game">
-            <column name="game_id" type="SERIAL">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="id" type="VARCHAR(36)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="player_one_id_value" type="VARCHAR(255)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="player_two_id_value" type="VARCHAR(255)">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-
-        <createTable tableName="game_move">
-            <column name="game_id" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="move_key" type="INT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="row" type="INT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="column" type="INT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="player_value" type="VARCHAR(255)">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-
-        <addPrimaryKey
-                columnNames="game_id, move_key"
-                constraintName="pk_player_move"
-                tableName="game_move"/>
-    </changeSet>
+    <include file="db/changelog/games/01-create-tic-tac-toe-games-scheme.xml" relativeToChangelogFile="false" />
+    <include file="db/changelog/users/01-create-users-scheme.xml" relativeToChangelogFile="false" />
 
 </databaseChangeLog>

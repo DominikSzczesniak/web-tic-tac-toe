@@ -1,6 +1,5 @@
 package pl.szczesniak.dominik.webtictactoe.users.domain;
 
-import org.springframework.stereotype.Repository;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.Username;
 
@@ -10,7 +9,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-@Repository
 class InMemoryUserRepository implements UserRepository {
 
 	private final Map<UserId, User> users = new HashMap<>();
@@ -34,7 +32,7 @@ class InMemoryUserRepository implements UserRepository {
 			final Field userIdField = userClass.getDeclaredField("userId");
 			userIdField.setAccessible(true);
 
-			userIdField.set(user, new UserId(id));
+			userIdField.set(user, id);
 		} catch (NoSuchFieldException | IllegalAccessException e) {
 			throw new RuntimeException(e);
 		}

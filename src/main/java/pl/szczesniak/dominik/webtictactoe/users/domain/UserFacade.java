@@ -27,7 +27,7 @@ public class UserFacade {
 
 	public UserId login(final Username username, final UserPassword userPassword) {
 		return repository.findBy(username)
-				.filter(user -> user.getUserPassword().equals(userPassword))
+				.filter(user -> user.getPassword().equals(userPassword))
 				.orElseThrow(() -> new InvalidCredentialsException("Invalid credentials, could not log in.")).getUserId();
 	}
 
