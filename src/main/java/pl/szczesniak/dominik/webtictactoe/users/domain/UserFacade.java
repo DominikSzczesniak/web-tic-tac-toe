@@ -2,6 +2,7 @@ package pl.szczesniak.dominik.webtictactoe.users.domain;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import pl.szczesniak.dominik.webtictactoe.commons.domain.model.exceptions.ObjectDoesNotExistException;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.CreateUser;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserPassword;
@@ -36,6 +37,10 @@ public class UserFacade {
 			throw new UsernameIsTakenException("Username: [" + username + "] is taken.");
 		}
 		return false;
+	}
+
+	public User getUserBy(final Username username) {
+		return repository.findBy(username).orElseThrow(() -> new ObjectDoesNotExistException("User: [" + username + "] not found."));
 	}
 
 }

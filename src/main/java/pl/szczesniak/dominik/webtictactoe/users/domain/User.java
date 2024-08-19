@@ -20,7 +20,7 @@ import static org.springframework.data.relational.core.mapping.Embedded.OnEmpty.
 @ToString
 @EqualsAndHashCode(of = "id")
 @Table("user_table")
-class User {
+public class User {
 
 	@Id
 	private String userId;
