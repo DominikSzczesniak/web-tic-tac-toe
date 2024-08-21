@@ -50,7 +50,9 @@ public class GamesFacade {
 	}
 
 	@Transactional
-	public void closeGame(final TicTacToeGameId ticTacToeGameId) {
+	public void closeGame(final TicTacToeGameId ticTacToeGameId, final UserId userId) {
+		TicTacToeGame ticTacToeGame = getTicTacToeGame(ticTacToeGameId);
+		ticTacToeGame.checkUserIsPartOfTheGame(userId);
 		ticTacToeGamesRepository.remove(ticTacToeGameId);
 	}
 

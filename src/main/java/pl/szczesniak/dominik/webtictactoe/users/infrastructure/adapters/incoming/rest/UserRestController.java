@@ -1,11 +1,20 @@
 package pl.szczesniak.dominik.webtictactoe.users.infrastructure.adapters.incoming.rest;
 
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import pl.szczesniak.dominik.webtictactoe.security.JWTGenerator;
 import pl.szczesniak.dominik.webtictactoe.users.domain.UserFacade;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.CreateUser;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
@@ -27,6 +37,10 @@ public class UserRestController {
 
 	private final UserFacade userService;
 
+	private final AuthenticationManager authenticationManager;
+	private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
+	private final JWTGenerator tokenGenerator;
+
 	@PostMapping("/api/users")
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<String> createUser(@RequestBody final CreateUserDTO userDto) {
@@ -39,13 +53,26 @@ public class UserRestController {
 	}
 
 	@PostMapping("/api/login")
-	public ResponseEntity<String> loginUser(@RequestBody final LoginUserDTO userDto) {
+	public ResponseEntity<String> loginUser(@RequestBody final LoginUserDTO userDto, final HttpServletRequest request, final HttpServletResponse response) {
 		try {
 			final UserId userId = userService.login(new Username(userDto.getUsername()), new UserPassword(userDto.getPassword()));
-			return ResponseEntity.status(HttpStatus.OK).body(userId.getValue());
+			final Authentication authentication = login(userDto, request, response);
+			final String token = tokenGenerator.generateToken(authentication, userId.getValue());
+			return ResponseEntity.status(HttpStatus.OK).body(token);
 		} catch (InvalidCredentialsException e) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
 		}
+	}
+
+	private Authentication login(final LoginUserDTO userDto, final HttpServletRequest request, final HttpServletResponse response) {
+		final UsernamePasswordAuthenticationToken token = UsernamePasswordAuthenticationToken.unauthenticated(
+				userDto.getUsername(), userDto.getPassword());
+		final Authentication authentication = authenticationManager.authenticate(token);
+		final SecurityContext context = SecurityContextHolder.createEmptyContext();
+		context.setAuthentication(authentication);
+		SecurityContextHolder.setContext(context);
+		securityContextRepository.saveContext(context, request, response);
+		return authentication;
 	}
 
 	@GetMapping("/api/users/{username}")

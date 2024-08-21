@@ -2,6 +2,7 @@ package pl.szczesniak.dominik.webtictactoe.users.domain;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.model.exceptions.ObjectDoesNotExistException;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.CreateUser;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
@@ -14,6 +15,7 @@ import pl.szczesniak.dominik.webtictactoe.users.domain.model.exceptions.Username
 public class UserFacade {
 
 	private final UserRepository repository;
+	private final PasswordEncoder passwordEncoder;
 
 	public UserId createUser(final CreateUser command) {
 		final User user = createFrom(command);
@@ -23,12 +25,12 @@ public class UserFacade {
 	}
 
 	private User createFrom(final CreateUser command) {
-		return new User(command.getUsername(), new UserPassword(command.getUserPassword().getValue()));
+		return new User(command.getUsername(), new UserPassword(passwordEncoder.encode(command.getUserPassword().getValue())));
 	}
 
 	public UserId login(final Username username, final UserPassword userPassword) {
 		return repository.findBy(username)
-				.filter(user -> user.getPassword().equals(userPassword))
+				.filter(user -> passwordEncoder.matches(userPassword.getValue(), user.getPassword().getValue()))
 				.orElseThrow(() -> new InvalidCredentialsException("Invalid credentials, could not log in.")).getUserId();
 	}
 

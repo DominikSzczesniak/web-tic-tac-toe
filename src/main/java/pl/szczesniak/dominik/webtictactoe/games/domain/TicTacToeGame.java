@@ -9,6 +9,7 @@ import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.relational.core.mapping.Embedded;
 import org.springframework.data.relational.core.mapping.MappedCollection;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.exceptions.OtherPlayerTurnException;
+import pl.szczesniak.dominik.webtictactoe.commons.domain.model.exceptions.ObjectDoesNotExistException;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameMove;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
@@ -88,6 +89,12 @@ class TicTacToeGame {
 
 	private Optional<GameMove> getLastMove() {
 		return moves.isEmpty() ? Optional.empty() : Optional.of(moves.get(moves.size() - 1));
+	}
+
+	void checkUserIsPartOfTheGame(final UserId userId) {
+		if (!playerOne.equals(userId) && !playerTwo.equals(userId)) {
+			throw new ObjectDoesNotExistException("User " + userId + " is not part of this game.");
+		}
 	}
 
 }

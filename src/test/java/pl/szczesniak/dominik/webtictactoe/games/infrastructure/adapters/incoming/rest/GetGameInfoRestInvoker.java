@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -17,11 +18,13 @@ public class GetGameInfoRestInvoker {
 
 	public final TestRestTemplate restTemplate;
 
-	public ResponseEntity<GameInfoDTO> getGameInfo(final Long gameId) {
+	public ResponseEntity<GameInfoDTO> getGameInfo(final Long gameId, final String token) {
+		final HttpHeaders headers = new HttpHeaders();
+		headers.set("Authorization", token);
 		return restTemplate.exchange(
 				URL,
 				HttpMethod.GET,
-				new HttpEntity<>(null),
+				new HttpEntity<>(headers),
 				GameInfoDTO.class,
 				gameId
 		);
@@ -29,8 +32,10 @@ public class GetGameInfoRestInvoker {
 
 	@Value
 	public static class GameInfoDTO {
-		@NonNull String userId;
-		@NonNull Character[][] boardView;
+		@NonNull
+		String userId;
+		@NonNull
+		Character[][] boardView;
 	}
 
 }

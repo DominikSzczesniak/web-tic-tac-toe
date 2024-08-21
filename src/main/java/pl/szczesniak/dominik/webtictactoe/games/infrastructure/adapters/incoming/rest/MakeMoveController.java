@@ -7,12 +7,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import pl.szczesniak.dominik.webtictactoe.games.domain.GamesFacade;
-import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameState;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameMove;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameState;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.MakeMove;
+import pl.szczesniak.dominik.webtictactoe.security.JWTGenerator;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
 @RequiredArgsConstructor
@@ -20,13 +22,16 @@ import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 public class MakeMoveController {
 
 	private final GamesFacade gamesFacade;
+	private final JWTGenerator tokenGenerator;
 
 	@PostMapping("/api/games/{gameId}/move")
-	public ResponseEntity<?> makeMove(@PathVariable final Long gameId, @RequestBody final MakeMoveDto makeMoveDto) {
+	public ResponseEntity<?> makeMove(@PathVariable final Long gameId, @RequestBody final MakeMoveDto makeMoveDto,
+									  final @RequestHeader(name = "Authorization") String token) {
 		try {
+			final UserId userId = tokenGenerator.getUserIdFromJWT(token);
 			final GameState gameResult = gamesFacade.makeMove(new MakeMove(
 					new TicTacToeGameId(gameId),
-					new GameMove(makeMoveDto.getRowIndex(), makeMoveDto.getColumnIndex(), new UserId(makeMoveDto.getPlayerId()))
+					new GameMove(makeMoveDto.getRowIndex(), makeMoveDto.getColumnIndex(), userId)
 			));
 
 			final GameStateDto gameStateDto = toDto(gameResult);

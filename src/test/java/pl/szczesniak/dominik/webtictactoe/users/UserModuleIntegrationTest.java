@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import pl.szczesniak.dominik.webtictactoe.security.JWTGenerator;
 import pl.szczesniak.dominik.webtictactoe.users.infrastructure.adapters.incoming.rest.CreateUserRestInvoker;
 import pl.szczesniak.dominik.webtictactoe.users.infrastructure.adapters.incoming.rest.CreateUserRestInvoker.CreateUserDto;
 import pl.szczesniak.dominik.webtictactoe.users.infrastructure.adapters.incoming.rest.LoginUserRestInvoker;
@@ -24,6 +25,9 @@ public class UserModuleIntegrationTest {
 	@Autowired
 	private LoginUserRestInvoker loginUserRest;
 
+	@Autowired
+	private JWTGenerator tokenGenerator;
+
 	@Test
 	void should_create_user_and_login_on_him() {
 		// given
@@ -42,7 +46,7 @@ public class UserModuleIntegrationTest {
 		// then
 		assertThat(loginUserResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(loginUserResponse.getBody()).isNotNull();
-		assertThat(loginUserResponse.getBody()).isEqualTo(createUserResponse.getBody());
+		assertThat(tokenGenerator.getUserIdFromJWT(loginUserResponse.getBody()).getValue()).isEqualTo(createUserResponse.getBody()); // todo: zapytac czy moge tak uzyc generatora, chcialem zwracac JSONa z tokentype: bearer itp, ale mialem problemy z parsowaniem wtedy
 	}
 
 	@Test
