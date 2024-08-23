@@ -148,28 +148,28 @@ class GameIntegrationTests {
 
 		// then
 		assertThat(gameInfoResponse_1.getStatusCode()).isEqualTo(HttpStatus.OK);
-		assertThat(gameInfoResponse_1.getBody().getUserId()).isEqualTo(playerOneId.getValue());
+		assertThat(gameInfoResponse_1.getBody().getPlayerToMove()).isEqualTo(playerOneId.getValue());
 
 		// when
 		makeMoveRest.makeMove(gameId, MakeMoveDto.builder().playerId(playerOneId.getValue()).rowIndex(1).columnIndex(1).build());
 
 		// then
 		final ResponseEntity<GameInfoDTO> gameInfoResponse_2 = getGameInfoRest.getGameInfo(gameId);
-		assertThat(gameInfoResponse_2.getBody().getUserId()).isEqualTo(playerTwoId.getValue());
+		assertThat(gameInfoResponse_2.getBody().getPlayerToMove()).isEqualTo(playerTwoId.getValue());
 
 		// when
 		makeMoveRest.makeMove(gameId, MakeMoveDto.builder().playerId(playerTwoId.getValue()).rowIndex(2).columnIndex(2).build());
 
 		// then
 		final ResponseEntity<GameInfoDTO> gameInfoResponse_3 = getGameInfoRest.getGameInfo(gameId);
-		assertThat(gameInfoResponse_3.getBody().getUserId()).isEqualTo(playerOneId.getValue());
+		assertThat(gameInfoResponse_3.getBody().getPlayerToMove()).isEqualTo(playerOneId.getValue());
 
 		// when
 		makeMoveRest.makeMove(gameId, MakeMoveDto.builder().playerId(playerOneId.getValue()).rowIndex(0).columnIndex(0).build());
 
 		// then
 		final ResponseEntity<GameInfoDTO> gameInfoResponse_4 = getGameInfoRest.getGameInfo(gameId);
-		assertThat(gameInfoResponse_4.getBody().getUserId()).isEqualTo(playerTwoId.getValue());
+		assertThat(gameInfoResponse_4.getBody().getPlayerToMove()).isEqualTo(playerTwoId.getValue());
 	}
 
 }

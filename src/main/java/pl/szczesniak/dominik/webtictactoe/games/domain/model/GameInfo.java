@@ -8,4 +8,6 @@ import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 public class GameInfo {
 	@NonNull UserId playerToMove;
 	@NonNull Character[][] boardView;
+	@NonNull GameState gameState;
+
 }
