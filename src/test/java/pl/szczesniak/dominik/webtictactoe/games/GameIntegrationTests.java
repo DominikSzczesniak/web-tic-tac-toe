@@ -163,7 +163,7 @@ class GameIntegrationTests {
 
 		// then
 		assertThat(gameInfoResponse_1.getStatusCode()).isEqualTo(HttpStatus.OK);
-		assertThat(gameInfoResponse_1.getBody().getUserId()).isEqualTo(playerOneId);
+		assertThat(gameInfoResponse_1.getBody().getPlayerToMove()).isEqualTo(playerOneId);
 
 		// when
 		makeMoveRest.makeMove(
@@ -174,7 +174,7 @@ class GameIntegrationTests {
 
 		// then
 		final ResponseEntity<GameInfoDTO> gameInfoResponse_2 = getGameInfoRest.getGameInfo(gameId, loggedUser_2.getToken());
-		assertThat(gameInfoResponse_2.getBody().getUserId()).isEqualTo(playerTwoId);
+		assertThat(gameInfoResponse_2.getBody().getPlayerToMove()).isEqualTo(playerTwoId);
 
 		// when
 		makeMoveRest.makeMove(
@@ -185,7 +185,7 @@ class GameIntegrationTests {
 
 		// then
 		final ResponseEntity<GameInfoDTO> gameInfoResponse_3 = getGameInfoRest.getGameInfo(gameId, loggedUser_1.getToken());
-		assertThat(gameInfoResponse_3.getBody().getUserId()).isEqualTo(playerOneId);
+		assertThat(gameInfoResponse_3.getBody().getPlayerToMove()).isEqualTo(playerOneId);
 
 		// when
 		makeMoveRest.makeMove(
@@ -196,7 +196,7 @@ class GameIntegrationTests {
 
 		// then
 		final ResponseEntity<GameInfoDTO> gameInfoResponse_4 = getGameInfoRest.getGameInfo(gameId, loggedUser_2.getToken());
-		assertThat(gameInfoResponse_4.getBody().getUserId()).isEqualTo(playerTwoId);
+		assertThat(gameInfoResponse_4.getBody().getPlayerToMove()).isEqualTo(playerTwoId);
 	}
 
 }

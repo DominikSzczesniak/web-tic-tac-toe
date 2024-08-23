@@ -100,8 +100,8 @@ function Board({gameId, playerId, onGameFinish}) {
             console.log('Move made');
             if (event && event.data) {
                 const eventData = JSON.parse(event.data);
-                if (eventData && eventData.whoWon) {
-                    if (eventData.whoWon === playerId) {
+                if (eventData && eventData.playerThatWon) {
+                    if (eventData.playerThatWon === playerId) {
                         setWinner(playerId)
                     } else {
                         setWinner("Opponent")
@@ -206,7 +206,7 @@ function Board({gameId, playerId, onGameFinish}) {
             }
             const data = await response.json();
             setBoardView(data.boardView);
-            if (data.userId === playerId) {
+            if (data.playerToMove === playerId) {
                 setIsPlayerTurn(true);
             } else {
                 setIsPlayerTurn(false);

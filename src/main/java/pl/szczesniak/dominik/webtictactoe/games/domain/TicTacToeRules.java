@@ -3,14 +3,15 @@ package pl.szczesniak.dominik.webtictactoe.games.domain;
 import lombok.RequiredArgsConstructor;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.SingleGame;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.GameResult;
+import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.GameStatus;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.Player;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.PlayerMove;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.PlayerName;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.model.Symbol;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameInfo;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameMove;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameState;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.MyGameStatus;
-import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameMove;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
 import java.util.List;
@@ -35,10 +36,10 @@ class TicTacToeRules {
 		return toGameState(playerMove.getPlayer(), gameResult);
 	}
 
-	private GameState toGameState(final UserId userId, final GameResult gameResult) {
+	private GameState toGameState(final UserId presumedWinner, final GameResult gameResult) {
 		try {
 			if (gameResult.getWhoWon() != null) {
-				return new GameState(MyGameStatus.fromGameStatus(gameResult.getGameStatus()), userId);
+				return new GameState(MyGameStatus.fromGameStatus(gameResult.getGameStatus()), presumedWinner);
 			}
 		} catch (NullPointerException e) {
 			return new GameState(MyGameStatus.fromGameStatus(gameResult.getGameStatus()), null);
@@ -52,9 +53,28 @@ class TicTacToeRules {
 
 	private GameInfo recreateTheGameForBoard(final Map<UserId, Player> players) {
 		final SingleGame singleGame = prepareSingleGame(players.get(ticTacToeGame.getPlayerOne()), players.get(ticTacToeGame.getPlayerTwo()));
-		ticTacToeGame.getMoves().forEach(move -> executeHistoryMove(players, singleGame, move));
-		return new GameInfo(getNextPlayerToMove(), singleGame.getBoardView());
+//		final GameResult gameResult = getGameResult(players, singleGame);
+		GameResult gameResult = null;
+		for (GameMove move : ticTacToeGame.getMoves()) {
+			gameResult = executeHistoryMove(players, singleGame, move);
+		}
+		if (gameResult == null) {
+			gameResult = new GameResult(GameStatus.IN_PROGRESS, null);
+		}
+		final UserId presumedWinner = getLastMove().map(GameMove::getPlayer).orElse(ticTacToeGame.getPlayerOne());
+		return new GameInfo(getNextPlayerToMove(), singleGame.getBoardView(), toGameState(presumedWinner, gameResult));
 	}
+
+//	private GameResult getGameResult(final Map<UserId, Player> players, final SingleGame singleGame) {
+//		GameResult gameResult = null;
+//		for (GameMove move : ticTacToeGame.getMoves()) {
+//			gameResult = executeHistoryMove(players, singleGame, move);
+//		}
+//		if (gameResult == null) {
+//			gameResult = new GameResult(GameStatus.IN_PROGRESS, null);
+//		}
+//		return gameResult;
+//	}
 
 	private UserId getNextPlayerToMove() {
 		final Optional<UserId> lastPlayer = getLastMove().map(GameMove::getPlayer);
@@ -69,8 +89,8 @@ class TicTacToeRules {
 		return moves.isEmpty() ? Optional.empty() : Optional.of(moves.get(moves.size() - 1));
 	}
 
-	private void executeHistoryMove(final Map<UserId, Player> players, final SingleGame singleGame, final GameMove move) {
-		singleGame.makeMove(players.get(move.getPlayer()), new PlayerMove(move.getRow(), move.getColumn()));
+	private GameResult executeHistoryMove(final Map<UserId, Player> players, final SingleGame singleGame, final GameMove move) {
+		return singleGame.makeMove(players.get(move.getPlayer()), new PlayerMove(move.getRow(), move.getColumn()));
 	}
 
 	private Map<UserId, Player> preparePlayers() {
