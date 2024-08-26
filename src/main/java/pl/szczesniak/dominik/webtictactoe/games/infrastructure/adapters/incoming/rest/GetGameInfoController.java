@@ -30,7 +30,11 @@ public class GetGameInfoController {
 		final String winnerId = gameInfo.getGameState().getWhoWon()
 				.map(UserId::getValue)
 				.orElse(null);
-		return new GameInfoDto(gameInfo.getPlayerToMove().getValue(), gameInfo.getBoardView(), gameInfo.getGameState().getGameStatus().toString(), winnerId);
+		return new GameInfoDto(
+				gameInfo.getPlayerToMove().getValue(),
+				gameInfo.getBoardView(),
+				gameInfo.getGameState().getGameStatus().toString(),
+				winnerId);
 	}
 
 	@Data
