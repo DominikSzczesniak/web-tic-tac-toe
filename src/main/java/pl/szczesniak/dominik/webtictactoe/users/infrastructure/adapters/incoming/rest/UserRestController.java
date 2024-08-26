@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import pl.szczesniak.dominik.webtictactoe.security.JWTGenerator;
 import pl.szczesniak.dominik.webtictactoe.users.domain.UserFacade;
@@ -42,7 +41,6 @@ public class UserRestController {
 	private final JWTGenerator tokenGenerator;
 
 	@PostMapping("/api/users")
-	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<String> createUser(@RequestBody final CreateUserDTO userDto) {
 		try {
 			final UserId value = userService.createUser(new CreateUser(new Username(userDto.getUsername()), new UserPassword(userDto.getPassword())));
