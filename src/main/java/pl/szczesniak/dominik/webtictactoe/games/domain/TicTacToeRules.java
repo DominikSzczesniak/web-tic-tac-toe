@@ -29,11 +29,22 @@ class TicTacToeRules {
 		final Map<UserId, Player> players = preparePlayers();
 		final SingleGame singleGame = prepareSingleGame(players.get(ticTacToeGame.getPlayerOne()), players.get(ticTacToeGame.getPlayerTwo()));
 
-		ticTacToeGame.getMoves().forEach(move -> executeHistoryMove(players, singleGame, move));
-		final GameResult gameResult = singleGame.makeMove(
-				players.get(playerMove.getPlayer()), new PlayerMove(playerMove.getRow(), playerMove.getColumn()));
+		final GameResult gameResult = applyMoveToGame(playerMove, players, singleGame);
 
 		return toGameState(playerMove.getPlayer(), gameResult);
+	}
+
+	private GameResult applyMoveToGame(final GameMove playerMove, final Map<UserId, Player> players, final SingleGame singleGame) {
+		ticTacToeGame.getMoves().forEach(move -> executeHistoryMove(players, singleGame, move));
+		return singleGame.makeMove(players.get(playerMove.getPlayer()), new PlayerMove(playerMove.getRow(), playerMove.getColumn()));
+	}
+
+	GameInfo gameInfo() {
+		final Map<UserId, Player> players = preparePlayers();
+		final SingleGame singleGame = prepareSingleGame(players.get(ticTacToeGame.getPlayerOne()), players.get(ticTacToeGame.getPlayerTwo()));
+		final GameResult gameResult = getGameResult(players, singleGame);
+		final UserId presumedWinner = getLastMove().map(GameMove::getPlayer).orElse(ticTacToeGame.getPlayerOne());
+		return new GameInfo(getNextPlayerToMove(), singleGame.getBoardView(), toGameState(presumedWinner, gameResult));
 	}
 
 	private GameState toGameState(final UserId presumedWinner, final GameResult gameResult) {
@@ -47,17 +58,6 @@ class TicTacToeRules {
 		return null;
 	}
 
-	GameInfo gameInfo() {
-		return recreateTheGameForBoard(preparePlayers());
-	}
-
-	private GameInfo recreateTheGameForBoard(final Map<UserId, Player> players) {
-		final SingleGame singleGame = prepareSingleGame(players.get(ticTacToeGame.getPlayerOne()), players.get(ticTacToeGame.getPlayerTwo()));
-		final GameResult gameResult = getGameResult(players, singleGame);
-		final UserId presumedWinner = getLastMove().map(GameMove::getPlayer).orElse(ticTacToeGame.getPlayerOne());
-		return new GameInfo(getNextPlayerToMove(), singleGame.getBoardView(), toGameState(presumedWinner, gameResult));
-	}
-
 	private GameResult getGameResult(final Map<UserId, Player> players, final SingleGame singleGame) {
 		GameResult gameResult = null;
 		for (GameMove move : ticTacToeGame.getMoves()) {
@@ -67,6 +67,10 @@ class TicTacToeRules {
 			gameResult = new GameResult(GameStatus.IN_PROGRESS, null);
 		}
 		return gameResult;
+	}
+
+	private GameResult executeHistoryMove(final Map<UserId, Player> players, final SingleGame singleGame, final GameMove move) {
+		return singleGame.makeMove(players.get(move.getPlayer()), new PlayerMove(move.getRow(), move.getColumn()));
 	}
 
 	private UserId getNextPlayerToMove() {
@@ -80,10 +84,6 @@ class TicTacToeRules {
 	private Optional<GameMove> getLastMove() {
 		final List<GameMove> moves = ticTacToeGame.getMoves();
 		return moves.isEmpty() ? Optional.empty() : Optional.of(moves.get(moves.size() - 1));
-	}
-
-	private GameResult executeHistoryMove(final Map<UserId, Player> players, final SingleGame singleGame, final GameMove move) {
-		return singleGame.makeMove(players.get(move.getPlayer()), new PlayerMove(move.getRow(), move.getColumn()));
 	}
 
 	private Map<UserId, Player> preparePlayers() {
