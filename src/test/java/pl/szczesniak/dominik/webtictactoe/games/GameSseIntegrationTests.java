@@ -7,6 +7,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameState;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.MyGameStatus;
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.GetGameForPlayerRestInvoker;
@@ -25,6 +26,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 import static pl.szczesniak.dominik.webtictactoe.games.domain.model.UserIdSample.createAnyUserId;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
+@ActiveProfiles("test")
 class GameSseIntegrationTests {
 
 	@Autowired

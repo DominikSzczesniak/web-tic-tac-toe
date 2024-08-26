@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import pl.szczesniak.dominik.webtictactoe.matchmaking.infrastructure.adapters.incoming.rest.QueueForGameRestInvoker;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,6 +13,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 import static pl.szczesniak.dominik.webtictactoe.games.domain.model.PlayerNameSample.createAnyPlayerName;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
+@ActiveProfiles("test")
 class MatchmakingIntegrationTests {
 
 	@Autowired
