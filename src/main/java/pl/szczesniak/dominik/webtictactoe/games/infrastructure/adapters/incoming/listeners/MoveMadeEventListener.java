@@ -3,6 +3,8 @@ package pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incomin
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.events.MoveMade;
 import pl.szczesniak.dominik.webtictactoe.sse.SpringSseService.MoveMadeDTO;
 import pl.szczesniak.dominik.webtictactoe.sse.SseService;
@@ -15,6 +17,7 @@ class MoveMadeEventListener {
 	private final SseService sseService;
 
 	@EventListener(MoveMade.class)
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleMoveMadeEvent(final MoveMade event) {
 		final MoveMadeDTO dto = toDto(event);
 		sseService.handleMoveMadeEvent(dto);

@@ -100,8 +100,8 @@ function Board({gameId, playerId, onGameFinish}) {
             console.log('Move made');
             if (event && event.data) {
                 const eventData = JSON.parse(event.data);
-                if (eventData && eventData.playerThatWon) {
-                    if (eventData.playerThatWon === playerId) {
+                if (eventData && eventData.whoWon) {
+                    if (eventData.whoWon === playerId) {
                         setWinner(playerId)
                     } else {
                         setWinner("Opponent")
