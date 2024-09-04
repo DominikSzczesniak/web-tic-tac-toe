@@ -6,11 +6,13 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Embedded;
 import org.springframework.data.relational.core.mapping.MappedCollection;
 import pl.szczesniak.dominik.tictactoe.core.singlegame.domain.exceptions.OtherPlayerTurnException;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.model.exceptions.ObjectDoesNotExistException;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameMove;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameMoveToMake;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
@@ -42,6 +44,9 @@ class TicTacToeGame {
 	@MappedCollection(idColumn = "game_id", keyColumn = "move_key")
 	private final List<GameMove> moves;
 
+	@Version
+	private Long version;
+
 	public TicTacToeGame(@NonNull final UserId playerOne, @NonNull final UserId playerTwo) {
 		this.playerOne = playerOne;
 		this.playerTwo = playerTwo;
@@ -63,25 +68,27 @@ class TicTacToeGame {
 		return new TicTacToeGameId(gameId);
 	}
 
-	void addMove(final GameMove currentMove) {
+	void addMove(final GameMoveToMake currentMove) {
 		checkIsPlayerMove(currentMove);
-		moves.add(currentMove);
+		final GameMove newMove = new GameMove(
+				moves.size() + 1, currentMove.getRow(), currentMove.getColumn(), currentMove.getPlayer());
+		moves.add(newMove);
 	}
 
-	private void checkIsPlayerMove(final GameMove currentMove) {
+	private void checkIsPlayerMove(final GameMoveToMake currentMove) {
 		getLastMove().ifPresentOrElse(
 				lastMove -> checkOtherPlayerThanLastTime(currentMove, lastMove),
 				() -> checkFirstPlayer(currentMove)
 		);
 	}
 
-	private void checkFirstPlayer(final GameMove currentMove) {
+	private void checkFirstPlayer(final GameMoveToMake currentMove) {
 		if (currentMove.getPlayer().equals(playerTwo)) {
 			throw new OtherPlayerTurnException("The first move must be made by Player One.");
 		}
 	}
 
-	private static void checkOtherPlayerThanLastTime(final GameMove currentMove, final GameMove lastMove) {
+	private static void checkOtherPlayerThanLastTime(final GameMoveToMake currentMove, final GameMove lastMove) {
 		if (lastMove.getPlayer().equals(currentMove.getPlayer())) {
 			throw new OtherPlayerTurnException("Same player tried to make a move.");
 		}
