@@ -3,9 +3,10 @@ package pl.szczesniak.dominik.webtictactoe.matchmaking.infrastructure.adapters.i
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import pl.szczesniak.dominik.webtictactoe.matchmaking.domain.MatchmakingFacade;
+import pl.szczesniak.dominik.webtictactoe.security.JWTGenerator;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
 @RequiredArgsConstructor
@@ -13,11 +14,13 @@ import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 public class QueueForGameController {
 
 	private final MatchmakingFacade matchmakingFacade;
+	private final JWTGenerator tokenGenerator;
 
 	@PostMapping("/api/queue")
-	public ResponseEntity<String> queueForGame(@RequestParam final String userId) {
-		final UserId playerId = matchmakingFacade.queueToPlay(new UserId(userId));
-		return ResponseEntity.status(201).body(playerId.getValue());
+	public ResponseEntity<String> queueForGame(@RequestHeader(name = "Authorization") final String token) {
+		final UserId userId = tokenGenerator.getUserIdFromJWT(token);
+		matchmakingFacade.queueToPlay(userId);
+		return ResponseEntity.status(201).body(userId.getValue());
 	}
 
 }

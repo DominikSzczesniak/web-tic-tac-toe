@@ -7,9 +7,9 @@ import pl.szczesniak.dominik.webtictactoe.commons.domain.InMemoryEventPublisher;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.model.DomainEvent;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.model.exceptions.ObjectDoesNotExistException;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameInfo;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameMove;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameState;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.MyGameStatus;
-import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameMove;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.CreateGameSample;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.MakeMoveSample;
@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static pl.szczesniak.dominik.webtictactoe.games.domain.TestGamesFacadeConfiguration.gamesFacade;
 import static pl.szczesniak.dominik.webtictactoe.games.domain.model.PlayerMoveSample.createAnyPlayerMove;
-import static pl.szczesniak.dominik.webtictactoe.games.domain.model.UserIdSample.createAnyUserId;
+import static pl.szczesniak.dominik.webtictactoe.users.domain.model.UserIdSample.createAnyUserId;
 
 class GamesFacadeTest {
 
@@ -65,13 +65,29 @@ class GamesFacadeTest {
 	}
 
 	@Test
+	void should_not_be_able_to_close_the_game_if_not_part_of_the_game() {
+		// given
+		final UserId playerOne = createAnyUserId();
+		final UserId playerTwo = createAnyUserId();
+		final UserId playerThree = createAnyUserId();
+
+		final TicTacToeGameId ticTacToeGameId = tut.createGame(CreateGameSample.builder().playerOne(playerOne).playerTwo(playerTwo).build());
+
+		// when
+		final Throwable thrown = catchThrowable(() -> tut.closeGame(ticTacToeGameId, playerThree));
+
+		// then
+		assertThat(thrown).isInstanceOf(ObjectDoesNotExistException.class);
+	}
+
+	@Test
 	void should_throw_exception_when_player_tries_to_move_in_already_closed_game() {
 		// given
 		final UserId playerOne = createAnyUserId();
 		final UserId playerTwo = createAnyUserId();
 
 		final TicTacToeGameId ticTacToeGame = tut.createGame(CreateGameSample.builder().playerOne(playerOne).playerTwo(playerTwo).build());
-		tut.closeGame(ticTacToeGame);
+		tut.closeGame(ticTacToeGame, playerOne);
 
 		// when
 		final Throwable thrown = catchThrowable(() -> tut.makeMove(MakeMoveSample.builder()

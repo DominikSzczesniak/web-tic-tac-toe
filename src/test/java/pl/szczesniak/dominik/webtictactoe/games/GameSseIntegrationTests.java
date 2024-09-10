@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameState;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.MyGameStatus;
 import pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incoming.rest.GetGameForPlayerRestInvoker;
+import pl.szczesniak.dominik.webtictactoe.security.LoggedUserProvider;
+import pl.szczesniak.dominik.webtictactoe.security.LoggedUserProvider.LoggedUser;
 import pl.szczesniak.dominik.webtictactoe.sse.SpringSseService.MoveMadeDTO;
 import pl.szczesniak.dominik.webtictactoe.sse.SseService;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
@@ -22,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-import static pl.szczesniak.dominik.webtictactoe.games.domain.model.UserIdSample.createAnyUserId;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 class GameSseIntegrationTests {
@@ -39,6 +40,9 @@ class GameSseIntegrationTests {
 	@Autowired
 	private SseService sseService;
 
+	@Autowired
+	private LoggedUserProvider loggedUserProvider;
+
 	@BeforeEach
 	void setUp() {
 		Mockito.reset(sseService);
@@ -47,24 +51,24 @@ class GameSseIntegrationTests {
 	@Test
 	void should_send_message_once_move_was_made() {
 		// given
-		final UserId playerOneId = createAnyUserId();
-		final UserId playerTwoId = createAnyUserId();
+		final LoggedUser loggedUser_1 = loggedUserProvider.getLoggedUser();
+		final LoggedUser loggedUser_2 = loggedUserProvider.getLoggedUser();
 
-		playersMatchedInvoker.playersMatched(playerOneId, playerTwoId);
+		playersMatchedInvoker.playersMatched(new UserId(loggedUser_1.getUserId()), new UserId(loggedUser_2.getUserId()));
 
-		final ResponseEntity<Long> checkGameIsReadyResponse = getGameForPlayerRest.getGameForPlayer(playerTwoId.getValue());
+		final ResponseEntity<Long> checkGameIsReadyResponse = getGameForPlayerRest.getGameForPlayer(loggedUser_1.getToken());
 		final Long gameId = checkGameIsReadyResponse.getBody();
 
 		// when
 		final ArgumentCaptor<MoveMadeDTO> captor = ArgumentCaptor.forClass(MoveMadeDTO.class);
-		moveMadeInvoker.moveMade(gameId, new GameState(MyGameStatus.WIN, playerOneId));
+		moveMadeInvoker.moveMade(gameId, new GameState(MyGameStatus.WIN, new UserId(loggedUser_1.getUserId())));
 
 		// then
 		verify(sseService, times(1)).handleMoveMadeEvent(captor.capture());
 
 		final MoveMadeDTO capturedArgument = captor.getValue();
 		assertThat(gameId).isEqualTo(capturedArgument.getGameId());
-		assertThat(playerOneId.getValue()).isEqualTo(capturedArgument.getWhoWon());
+		assertThat(loggedUser_1.getUserId()).isEqualTo(capturedArgument.getWhoWon());
 		verifyFieldNames(capturedArgument);
 	}
 

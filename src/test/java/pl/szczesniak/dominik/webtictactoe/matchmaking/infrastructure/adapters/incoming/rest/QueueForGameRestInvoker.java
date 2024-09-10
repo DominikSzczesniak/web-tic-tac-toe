@@ -2,6 +2,8 @@ package pl.szczesniak.dominik.webtictactoe.matchmaking.infrastructure.adapters.i
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -14,12 +16,13 @@ public class QueueForGameRestInvoker {
 
 	public final TestRestTemplate restTemplate;
 
-	public ResponseEntity<String> queueForGame(final String userId) {
-		final String urlWithParam = URL + "?userId=" + userId;
+	public ResponseEntity<String> queueForGame(final String token) {
+		final HttpHeaders headers = new HttpHeaders();
+		headers.set("Authorization", token);
 		return restTemplate.exchange(
-				urlWithParam,
+				URL,
 				HttpMethod.POST,
-				null,
+				new HttpEntity<>(headers),
 				String.class
 		);
 	}
