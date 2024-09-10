@@ -1,15 +1,17 @@
 import {useEffect, useState} from 'react';
+import {jwtDecode} from "jwt-decode";
 
-function QueueForGame({username, setUsername, setPlayerId, gameId}) {
+function QueueForGame({token, gameId, onLogout}) {
     const [inQueue, setInQueue] = useState(false);
 
     async function queueForGame() {
         setInQueue(true);
         try {
-            const response = await fetch(`http://localhost:8080/api/queue?userId=${encodeURIComponent(username)}`, {
+            const response = await fetch(`http://localhost:8080/api/queue`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': token,
                 }
             });
 
@@ -18,15 +20,10 @@ function QueueForGame({username, setUsername, setPlayerId, gameId}) {
             }
 
             const data = await response.text();
-            setPlayerId(username);
             console.log('Player queued successfully with playerId:', data);
         } catch (error) {
             console.error(error);
         }
-    }
-
-    function handleUsernameChange(event) {
-        setUsername(event.target.value);
     }
 
     const handleQueueClick = () => {
@@ -41,21 +38,25 @@ function QueueForGame({username, setUsername, setPlayerId, gameId}) {
                 <div className="queue-message">In Queue...</div>
             ) : (
                 <div>
-                    <label>
-                        <input type="text" placeholder="username" value={username} onChange={handleUsernameChange}/>
-                    </label>
-                    <button onClick={handleQueueClick}>Queue for Game</button>
+                    <button className="queue-for-game-button" onClick={handleQueueClick}>Queue for Game</button>
+                    <button className="logout-button" onClick={onLogout}>Logout</button>
                 </div>
             )}
         </div>
     );
 }
 
-function GetGameForPlayer({playerId, onGameIdChange}) {
+function GetGameForPlayer({token, onGameIdChange}) {
     useEffect(() => {
-        if (playerId) {
+        if (token) {
             const interval = setInterval(() => {
-                fetch(`http://localhost:8080/api/games?playerId=${playerId}`)
+                fetch(`http://localhost:8080/api/games`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token,
+                    }
+                })
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('Network response was not ok');
@@ -74,12 +75,12 @@ function GetGameForPlayer({playerId, onGameIdChange}) {
 
             return () => clearInterval(interval);
         }
-    }, [playerId]);
+    }, [token]);
 
     return null;
 }
 
-function Board({gameId, playerId, onGameFinish}) {
+function Board({gameId, playerId, onGameFinish, token}) {
     const [winner, setWinner] = useState(null);
     const [winningCells, setWinningCells] = useState(null);
     const [isPlayerTurn, setIsPlayerTurn] = useState(null);
@@ -182,9 +183,9 @@ function Board({gameId, playerId, onGameFinish}) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': token,
                 },
                 body: JSON.stringify({
-                    playerId: playerId,
                     rowIndex: rowIndex,
                     columnIndex: columnIndex,
                 }),
@@ -200,15 +201,23 @@ function Board({gameId, playerId, onGameFinish}) {
 
     async function fetchGameInfo(gameId) {
         try {
-            const response = await fetch(`http://localhost:8080/api/games/${gameId}`);
+            const response = await fetch(`http://localhost:8080/api/games/${gameId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token,
+                }
+            });
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
             const data = await response.json();
             setBoardView(data.boardView);
             if (data.playerToMove === playerId) {
+                console.log('PLAYER TO MOVE TERAZ: ' + data.playerToMove)
                 setIsPlayerTurn(true);
             } else {
+                console.log('PLAYER TO MOVE TERAZ: ' + data.playerToMove)
                 setIsPlayerTurn(false);
             }
             console.log("updated board ", data);
@@ -261,11 +270,15 @@ function Board({gameId, playerId, onGameFinish}) {
     );
 }
 
-function CloseGameButton({gameId, onCloseGame}) {
+function CloseGameButton({gameId, onCloseGame, token}) {
     const handleClick = async () => {
         try {
             const response = await fetch(`http://localhost:8080/api/games/${gameId}`, {
                 method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token,
+                }
             });
             if (response.ok) {
                 onCloseGame();
@@ -284,35 +297,185 @@ function CloseGameButton({gameId, onCloseGame}) {
     );
 }
 
-function App() {
+function CreateAccountForm({onCreateAccount}) {
     const [username, setUsername] = useState('');
-    const [playerId, setPlayerId] = useState('');
+    const [password, setPassword] = useState('');
+
+    async function handleRegister(userDto) {
+        try {
+            const response = await fetch('http://localhost:8080/api/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userDto),
+            });
+
+            if (response.status === 201) {
+                onCreateAccount();
+                console.log('Registration successful! Please log in.');
+            } else if (response.status === 400) {
+                console.log('Username is already taken.');
+            } else {
+                console.log('Failed to register.');
+            }
+        } catch (error) {
+            console.error('Error during registration:', error);
+        }
+    }
+
+    const handleCreateClick = () => {
+        handleRegister({username, password});
+    };
+
+    return (
+        <div className="center-container">
+            <div className="create-account-container">
+                <div>
+                    <label className="input-label">
+                        <input
+                            type="text"
+                            placeholder="Username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                        />
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                    </label>
+                    <button onClick={handleCreateClick}>Create account</button>
+                </div>
+            </div>
+            <button className="back-to-login-button" onClick={onCreateAccount}>
+                Back to login
+            </button>
+        </div>
+    );
+}
+
+function LoginForm({onLogin, goToCreateAccount}) {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+
+    async function handleLogin(userDto) {
+        try {
+            const response = await fetch('http://localhost:8080/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userDto),
+            });
+
+            if (response.status === 200) {
+                console.log('Logged in successfuly');
+                const data = await response.text();
+                onLogin(data)
+            } else {
+                console.log('Failed to login.');
+            }
+        } catch (error) {
+            console.error('Error during login:', error);
+        }
+    }
+
+    const handleLoginClick = () => {
+        handleLogin({username, password});
+    };
+
+    return (
+        <div className="center-container">
+            <div className="create-account-container">
+                <div>
+                    <label className="input-label">
+                        <input
+                            type="text"
+                            placeholder="Username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                        />
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                    </label>
+                    <button onClick={handleLoginClick}>Login</button>
+                </div>
+            </div>
+            <button className="back-to-login-button" onClick={goToCreateAccount}>
+                Create account
+            </button>
+        </div>
+    );
+}
+
+function App() {
+    const [token, setToken] = useState(localStorage.getItem('token') || '');
     const [gameId, setGameId] = useState('');
     const [isGameFinished, setIsGameFinished] = useState(false);
+    const [isRegistering, setIsRegistering] = useState(false);
 
     function handleGameFinished() {
         setIsGameFinished(true);
     }
 
+    function handleLogin(token) {
+        setToken(token)
+        localStorage.setItem('token', token)
+        setIsRegistering(false)
+    }
+
+    function handleRegisterAccount() {
+        setIsRegistering(false);
+    }
+
     function handleCloseGame() {
         setGameId('');
-        setPlayerId('')
-        setUsername('')
         setIsGameFinished(false)
-        console.log("game has been closed, in app ", {gameId})
     }
+
+    function goToCreateAccount() {
+        setIsRegistering(true);
+    }
+
+    function logout() {
+        setToken('')
+        localStorage.setItem('token', '')
+        setIsRegistering(false)
+    }
+
+    function getUserIdFromToken() {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const decodedToken = jwtDecode(token);
+            return decodedToken.userId;
+        }
+        return null;
+    }
+
+    const playerId = getUserIdFromToken();
 
     return (
         <div className="game-container">
-            {gameId ? (
+            {isRegistering ? (
+                <CreateAccountForm onCreateAccount={handleRegisterAccount}/>
+            ) : !token ? (
+                <LoginForm onLogin={handleLogin} goToCreateAccount={goToCreateAccount}/>
+            ) : gameId ? (
                 <div>
                     <Board
                         gameId={gameId}
                         playerId={playerId}
                         onGameFinish={handleGameFinished}
+                        token={token}
                     />
                     {isGameFinished ? (
-                        <CloseGameButton gameId={gameId} onCloseGame={handleCloseGame}/>
+                        <CloseGameButton gameId={gameId} onCloseGame={handleCloseGame} token={token}/>
                     ) : (
                         <h2></h2>
                     )}
@@ -320,14 +483,12 @@ function App() {
             ) : (
                 <div>
                     <QueueForGame
-                        username={username}
-                        setUsername={setUsername}
-                        playerId={playerId}
-                        setPlayerId={setPlayerId}
+                        onLogout={logout}
+                        token={token}
                         gameId={gameId}
                     />
                     <GetGameForPlayer
-                        playerId={playerId}
+                        token={token}
                         onGameIdChange={setGameId}
                     />
                 </div>
