@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import pl.szczesniak.dominik.webtictactoe.games.domain.GamesFacade;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameInfo;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
+import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
 @RequiredArgsConstructor
 @RestController
@@ -26,13 +27,22 @@ public class GetGameInfoController {
 	}
 
 	private GameInfoDto toDto(final GameInfo gameInfo) {
-		return new GameInfoDto(gameInfo.getPlayerToMove().getValue(), gameInfo.getBoardView());
+		final String winnerId = gameInfo.getGameState().getWhoWon()
+				.map(UserId::getValue)
+				.orElse(null);
+		return new GameInfoDto(
+				gameInfo.getPlayerToMove().getValue(),
+				gameInfo.getBoardView(),
+				gameInfo.getGameState().getGameStatus().toString(),
+				winnerId);
 	}
 
 	@Data
 	public static class GameInfoDto {
-		private final String userId;
+		private final String playerToMove;
 		private final Character[][] boardView;
+		private final String gameStatus;
+		private final String playerThatWon;
 	}
 
 }

@@ -206,7 +206,7 @@ function Board({gameId, playerId, onGameFinish}) {
             }
             const data = await response.json();
             setBoardView(data.boardView);
-            if (data.userId === playerId) {
+            if (data.playerToMove === playerId) {
                 setIsPlayerTurn(true);
             } else {
                 setIsPlayerTurn(false);

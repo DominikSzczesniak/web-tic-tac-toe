@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import pl.szczesniak.dominik.webtictactoe.games.domain.GamesFacade;
-import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameMove;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameMoveToMake;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameState;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.commands.MakeMove;
@@ -31,7 +31,7 @@ public class MakeMoveController {
 			final UserId userId = tokenGenerator.getUserIdFromJWT(token);
 			final GameState gameResult = gamesFacade.makeMove(new MakeMove(
 					new TicTacToeGameId(gameId),
-					new GameMove(makeMoveDto.getRowIndex(), makeMoveDto.getColumnIndex(), userId)
+					new GameMoveToMake(makeMoveDto.getRowIndex(), makeMoveDto.getColumnIndex(), userId)
 			));
 
 			final GameStateDto gameStateDto = toDto(gameResult);

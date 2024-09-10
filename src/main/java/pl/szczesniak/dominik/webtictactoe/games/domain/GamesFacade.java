@@ -18,6 +18,7 @@ public class GamesFacade {
 
 	private final TicTacToeGamesRepository ticTacToeGamesRepository;
 	private final DomainEventsPublisher domainEventsPublisher;
+	private final TicTacToeRulesFactory ticTacToeRulesFactory;
 
 	@Transactional
 	public TicTacToeGameId createGame(final CreateGame command) {
@@ -29,7 +30,7 @@ public class GamesFacade {
 	@Transactional
 	public GameState makeMove(final MakeMove command) {
 		final TicTacToeGame ticTacToeGame = getTicTacToeGame(command.getGameId());
-		final TicTacToeRules ticTacToeRules = new TicTacToeRules(ticTacToeGame);
+		final TicTacToeRules ticTacToeRules = ticTacToeRulesFactory.ticTacToeRulesFor(ticTacToeGame);
 
 		final GameState gameState = ticTacToeRules.makeMove(command.getMove());
 		ticTacToeGame.addMove(command.getMove());
@@ -41,7 +42,7 @@ public class GamesFacade {
 
 	public GameInfo getGameInfo(final TicTacToeGameId gameId) {
 		final TicTacToeGame ticTacToeGame = getTicTacToeGame(gameId);
-		final TicTacToeRules ticTacToeRules = new TicTacToeRules(ticTacToeGame);
+		final TicTacToeRules ticTacToeRules = ticTacToeRulesFactory.ticTacToeRulesFor(ticTacToeGame);
 		return ticTacToeRules.gameInfo();
 	}
 

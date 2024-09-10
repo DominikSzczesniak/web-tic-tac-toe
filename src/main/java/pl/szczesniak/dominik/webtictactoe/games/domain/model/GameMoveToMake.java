@@ -5,9 +5,13 @@ import lombok.Value;
 import pl.szczesniak.dominik.webtictactoe.users.domain.model.UserId;
 
 @Value
-public class GameInfo {
-	@NonNull UserId playerToMove;
-	@NonNull Character[][] boardView;
-	@NonNull GameState gameState;
+public class GameMoveToMake {
+
+	@NonNull
+	Integer row;
+	@NonNull
+	Integer column;
+	@NonNull
+	UserId player;
 
 }

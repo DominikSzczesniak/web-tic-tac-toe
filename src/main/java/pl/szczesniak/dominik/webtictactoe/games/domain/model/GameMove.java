@@ -12,6 +12,8 @@ import static org.springframework.data.relational.core.mapping.Embedded.OnEmpty.
 @Table("game_move")
 public class GameMove {
 
+	int moveNumber;
+
 	@NonNull Integer row;
 
 	@NonNull Integer column;

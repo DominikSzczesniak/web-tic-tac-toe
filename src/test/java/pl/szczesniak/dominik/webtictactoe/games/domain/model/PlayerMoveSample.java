@@ -6,11 +6,11 @@ import java.util.Random;
 
 public class PlayerMoveSample {
 
-	public static GameMove createAnyPlayerMove(final UserId playerId) {
+	public static GameMoveToMake createAnyPlayerMove(final UserId playerId) {
 		final Random random = new Random();
 		int row = random.nextInt(3);
 		int col = random.nextInt(3);
-		return new GameMove(row, col, playerId);
+		return new GameMoveToMake(row, col, playerId);
 	}
 
 }

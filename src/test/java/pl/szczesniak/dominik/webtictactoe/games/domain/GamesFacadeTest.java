@@ -7,7 +7,7 @@ import pl.szczesniak.dominik.webtictactoe.commons.domain.InMemoryEventPublisher;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.model.DomainEvent;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.model.exceptions.ObjectDoesNotExistException;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameInfo;
-import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameMove;
+import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameMoveToMake;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.GameState;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.MyGameStatus;
 import pl.szczesniak.dominik.webtictactoe.games.domain.model.TicTacToeGameId;
@@ -158,35 +158,35 @@ class GamesFacadeTest {
 
 		// when
 		final GameState gameState_1 = tut.makeMove(MakeMoveSample.builder()
-				.ticTacToeGameId(gameId).playerMove(new GameMove(0, 0, playerOne)).build());
+				.ticTacToeGameId(gameId).playerMove(new GameMoveToMake(0, 0, playerOne)).build());
 
 		// then
 		assertThat(gameState_1.getGameStatus()).isEqualTo(MyGameStatus.IN_PROGRESS);
 
 		// when
 		final GameState gameState_2 = tut.makeMove(MakeMoveSample.builder()
-				.ticTacToeGameId(gameId).playerMove(new GameMove(0, 1, playerTwo)).build());
+				.ticTacToeGameId(gameId).playerMove(new GameMoveToMake(0, 1, playerTwo)).build());
 
 		// then
 		assertThat(gameState_2.getGameStatus()).isEqualTo(MyGameStatus.IN_PROGRESS);
 
 		// when
 		final GameState gameState_3 = tut.makeMove(MakeMoveSample.builder()
-				.ticTacToeGameId(gameId).playerMove(new GameMove(1, 0, playerOne)).build());
+				.ticTacToeGameId(gameId).playerMove(new GameMoveToMake(1, 0, playerOne)).build());
 
 		// then
 		assertThat(gameState_3.getGameStatus()).isEqualTo(MyGameStatus.IN_PROGRESS);
 
 		// when
 		final GameState gameState_4 = tut.makeMove(MakeMoveSample.builder()
-				.ticTacToeGameId(gameId).playerMove(new GameMove(0, 2, playerTwo)).build());
+				.ticTacToeGameId(gameId).playerMove(new GameMoveToMake(0, 2, playerTwo)).build());
 
 		// then
 		assertThat(gameState_4.getGameStatus()).isEqualTo(MyGameStatus.IN_PROGRESS);
 
 		// when
 		final GameState gameStateFinish = tut.makeMove(MakeMoveSample.builder()
-				.ticTacToeGameId(gameId).playerMove(new GameMove(2, 0, playerOne)).build());
+				.ticTacToeGameId(gameId).playerMove(new GameMoveToMake(2, 0, playerOne)).build());
 
 		// then
 		assertThat(gameStateFinish.getGameStatus()).isEqualTo(MyGameStatus.WIN);
