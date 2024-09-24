@@ -41,6 +41,7 @@ public class SecurityConfiguration {
 				.sessionManagement(sessionsConfigurer -> sessionsConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/api/login").permitAll()
+						.requestMatchers("/api/subscribe/games/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/users").permitAll()
 						.anyRequest().authenticated()
 				);
