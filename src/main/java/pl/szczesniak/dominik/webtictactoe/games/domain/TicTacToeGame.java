@@ -47,7 +47,7 @@ class TicTacToeGame {
 	@Version
 	private Long version;
 
-	public TicTacToeGame(@NonNull final UserId playerOne, @NonNull final UserId playerTwo) {
+	TicTacToeGame(@NonNull final UserId playerOne, @NonNull final UserId playerTwo) {
 		this.playerOne = playerOne;
 		this.playerTwo = playerTwo;
 		this.id = UUID.randomUUID().toString();

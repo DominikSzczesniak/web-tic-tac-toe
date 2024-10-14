@@ -46,7 +46,7 @@ public class GamesFacade {
 		return ticTacToeRules.gameInfo();
 	}
 
-	private TicTacToeGame getTicTacToeGame(final TicTacToeGameId gameId) {
+	TicTacToeGame getTicTacToeGame(final TicTacToeGameId gameId) {
 		return ticTacToeGamesRepository.getGame(gameId).orElseThrow(() -> new ObjectDoesNotExistException("Game " + gameId + " does not exist"));
 	}
 

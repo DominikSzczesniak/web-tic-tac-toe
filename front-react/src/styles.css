@@ -197,7 +197,7 @@ body {
   align-items: center;
   justify-content: center;
   height: 90vh;
-  position: relative; /* Allows precise positioning */
+  position: relative;
 }
 
 .create-account-container {
@@ -207,7 +207,7 @@ body {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   width: 300px;
   display: flex;
-  flex-direction: column; /* Ensure elements stack vertically */
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
@@ -237,13 +237,13 @@ body {
 
 .logout-button {
   position: absolute;
-  top: 10px; /* Adjust as needed */
-  right: 10px; /* Adjust as needed */
-  background-color: red; /* Set background color to red */
-  color: white; /* Set text color to white for contrast */
-  border: none; /* Remove border if you don't want one */
-  padding: 10px 20px; /* Add some padding */
-  border-radius: 5px; /* Optional: Rounded corners */
-  cursor: pointer; /* Change cursor to pointer on hover */
-  font-size: 16px; /* Adjust font size as needed */
+  top: 10px;
+  right: 10px;
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
 }
