@@ -1,5 +1,7 @@
 package pl.szczesniak.dominik.webtictactoe.commons.domain;
 
+import pl.szczesniak.dominik.webtictactoe.commons.domain.model.DomainEvent;
+
 import java.util.ArrayList;
 import java.util.List;
 

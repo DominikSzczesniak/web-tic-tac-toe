@@ -8,8 +8,10 @@ import pl.szczesniak.dominik.webtictactoe.commons.domain.DomainEventsPublisher;
 class GameFacadeConfiguration {
 
 	@Bean
-	public GamesFacade gamesFacade(final DomainEventsPublisher domainEventsPublisher) {
-		return new GamesFacade(new GamesService(domainEventsPublisher));
+	public GamesFacade gamesFacade(final DomainEventsPublisher domainEventsPublisher,
+								   final TicTacToeGamesRepository repository,
+								   final TicTacToeRulesFactory ticTacToeRulesFactory) {
+		return new GamesFacade(repository, domainEventsPublisher, ticTacToeRulesFactory);
 	}
 
 }

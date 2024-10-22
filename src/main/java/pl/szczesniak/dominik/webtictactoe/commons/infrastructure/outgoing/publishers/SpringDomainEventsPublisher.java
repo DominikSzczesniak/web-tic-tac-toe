@@ -3,7 +3,7 @@ package pl.szczesniak.dominik.webtictactoe.commons.infrastructure.outgoing.publi
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import pl.szczesniak.dominik.webtictactoe.commons.domain.DomainEvent;
+import pl.szczesniak.dominik.webtictactoe.commons.domain.model.DomainEvent;
 import pl.szczesniak.dominik.webtictactoe.commons.domain.DomainEventsPublisher;
 
 @Component

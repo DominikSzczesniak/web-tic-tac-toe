@@ -3,6 +3,7 @@ package pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incomin
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -15,12 +16,13 @@ public class CloseGameRestInvoker {
 
 	public final TestRestTemplate restTemplate;
 
-	public ResponseEntity<Void> closeGame(final Long gameId) {
-
+	public ResponseEntity<Void> closeGame(final Long gameId, final String token) {
+		final HttpHeaders headers = new HttpHeaders();
+		headers.set("Authorization", token);
 		return restTemplate.exchange(
 				URL,
 				HttpMethod.DELETE,
-				new HttpEntity<>(null),
+				new HttpEntity<>(headers),
 				Void.class,
 				gameId
 		);

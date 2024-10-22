@@ -2,6 +2,8 @@ package pl.szczesniak.dominik.webtictactoe.games.infrastructure.adapters.incomin
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -14,12 +16,13 @@ public class GetGameForPlayerRestInvoker {
 
 	public final TestRestTemplate restTemplate;
 
-	public ResponseEntity<Long> getGameForPlayer(final String playerId) {
-		final String urlWithParam = URL + "?playerId=" + playerId;
+	public ResponseEntity<Long> getGameForPlayer(final String token) {
+		final HttpHeaders headers = new HttpHeaders();
+		headers.set("Authorization", token);
 		return restTemplate.exchange(
-				urlWithParam,
+				URL,
 				HttpMethod.GET,
-				null,
+				new HttpEntity<>(headers),
 				Long.class
 		);
 	}
